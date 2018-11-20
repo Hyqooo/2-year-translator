@@ -27,7 +27,8 @@ void main(int argc, char *argv[]) {
 		return;
 
 	if ((output = fopen(" ", "w")) == NULL)
-		return;
+		//		return;
+		;
 
 	lex_analyzer();
 
@@ -143,10 +144,15 @@ void makeInternalRep(int tableNum, int numberInTable) {
 }
 
 int isConstant() {
+	int count = 0;
 	for (int i = 0; i < buff_index; i++) {
-		if (!isdigit(buf[i]))
+		if (!isdigit(buf[i])) {
 			if (buf[i] != '.')
 				return 0;
+			count++;
+			if (count > 1)
+				return 0;
+		}
 	}
 
 	return 1;
