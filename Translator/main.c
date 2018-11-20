@@ -27,8 +27,7 @@ void main(int argc, char *argv[]) {
 		return;
 
 	if ((output = fopen(" ", "w")) == NULL)
-		//		return
-		;
+		return;
 
 	lex_analyzer();
 
