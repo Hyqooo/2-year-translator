@@ -36,9 +36,8 @@ void lexManager() {
 	if ((input = fopen("D:\\source.txt", "r")) == NULL)
 		return;
 
-	if ((output = fopen(" ", "w")) == NULL)
-		//		return;
-		;
+	if ((output = fopen("D:\\lex_analysis", "w")) == NULL)
+		return;
 
 	lex_analyzer();
 
@@ -46,6 +45,8 @@ void lexManager() {
 	printTable(TID);
 	printf("Constants:\n");
 	printTable(TNUM);
+
+	fclose(input);
 }
 
 void printTable(tabl t) {
@@ -184,13 +185,17 @@ int putl(tabl* t) {
 	return t->size - 1;
 }
 
+int isLegalId() {
+	return isalpha(buf[0]) ? 1 : 0;
+}
+
+
+
 #pragma endregion
 
 #pragma region SYNTAX ANALYZER
 
-int isLegalId() {
-	return isalpha(buf[0]) ? 1 : 0;
-}
+
 
 #pragma endregion
 
