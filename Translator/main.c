@@ -21,6 +21,16 @@ FILE *input = NULL;
 FILE *output = NULL;
 
 void main(int argc, char *argv[]) {
+	// Lexical analysis
+	lexManager();
+
+
+	printf("\n");
+	system("PAUSE");
+}
+#pragma region LEXICAL ANALYZER
+
+void lexManager() {
 	tabl_init();
 
 	if ((input = fopen("D:\\source.txt", "r")) == NULL)
@@ -36,11 +46,7 @@ void main(int argc, char *argv[]) {
 	printTable(TID);
 	printf("Constants:\n");
 	printTable(TNUM);
-
-	printf("\n");
-	system("PAUSE");
 }
-#pragma region LEXICAL ANALYZER
 
 void printTable(tabl t) {
 	for (int i = 0; i < t.size; i++) {

@@ -44,6 +44,7 @@ void lex_analyzer();
 void makeInternalRep();
 void delimiterParser();
 void printTable();
+void lexManager();
 int isConstant();
 int isLegalId();
 int look(tabl t);
