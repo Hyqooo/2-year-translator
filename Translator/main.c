@@ -195,7 +195,9 @@ int isLegalId() {
 
 #pragma region SYNTAX ANALYZER
 
+void syntax_manager() {
 
+}
 
 #pragma endregion
 
