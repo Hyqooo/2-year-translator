@@ -231,6 +231,41 @@ int syntax_manager() {
 	fseek(input, 0, SEEK_SET);
 }
 
+int prog() {
+	if (eq("PROGRAM"))
+		progname();
+	else
+		return;
+	
+	if (eq("VAR"));
+
+}
+
+int progName() {
+
+}
+
+int eq(char *s) {
+	return !strcmp(find(), s);
+}
+
+char* find(){
+	switch (cur_lex.table) {
+	case 1:
+		return TW.table + cur_lex.numberInTable * TW.word_size;
+		break;
+	case 2:
+		return TD.table + cur_lex.numberInTable * TD.word_size;
+		break;
+	case 3:
+		return TNUM.table + cur_lex.numberInTable * TNUM.word_size;
+		break;
+	case 4:
+		return TID.table + cur_lex.numberInTable * TID.word_size;
+		break;
+	}
+}
+
 #pragma endregion
 
 #pragma region UTILITY
