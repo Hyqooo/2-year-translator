@@ -209,7 +209,15 @@ int putl(tabl* t) {
 }
 
 int isLegalId() {
-	return isalpha(buf[0]) ? 1 : 0;
+	if (!isalpha(buf[0]))
+		return 0;
+	
+	for (int i = 1; i < buff_index; i++) {
+		if (!isalnum(buf[i]))
+			return 0;
+	}
+
+	return 1;
 }
 
 #pragma endregion
