@@ -63,6 +63,7 @@ void tabl_free();
 
 void getLex();
 int syntax_manager();
+char *find();
 
 int parseInt();
 
