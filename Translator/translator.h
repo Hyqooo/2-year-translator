@@ -30,6 +30,14 @@ typedef struct tabl {
 	int table_number;
 }tabl;
 
+// table - номер таблицы
+// numberInTable - номер лексемы в таблице 
+typedef struct lex {
+	int table;
+	int numberInTable;
+}lex;
+
+
 /*
 	Прототипы
 */
@@ -44,12 +52,18 @@ void lex_analyzer();
 void makeInternalRep();
 void delimiterParser();
 void printTable();
-void lexManager();
+int getLexNumber();
+int lexManager();
 int isConstant();
 int isLegalId();
 int look(tabl t);
 int putl(tabl* t);
 int putnum();
+
+void getLex();
+int syntax_manager();
+
+int parseInt();
 
 /*
 	Таблицы
