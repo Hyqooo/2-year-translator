@@ -1,10 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include "translator.h"
 
 char buf[BUFFER_SIZE];
@@ -20,24 +20,27 @@ tabl TNUM;
 FILE *input = NULL;
 FILE *output = NULL;
 
+lex cur_lex;
+
 void main(int argc, char *argv[]) {
 	// Lexical analysis
 	lexManager();
-
+	syntax_manager();
 
 	printf("\n");
 	system("PAUSE");
 }
+
 #pragma region LEXICAL ANALYZER
 
-void lexManager() {
+int lexManager() {
 	tabl_init();
 
 	if ((input = fopen("D:\\source.txt", "r")) == NULL)
-		return;
+		return NOT_FOUND;
 
-	if ((output = fopen("D:\\lex_analysis", "w")) == NULL)
-		return;
+	if ((output = fopen("D:\\lex_analysis.txt", "w")) == NULL)
+		return NOT_FOUND;
 
 	lex_analyzer();
 
@@ -47,6 +50,8 @@ void lexManager() {
 	printTable(TNUM);
 
 	fclose(input);
+	fclose(output);
+	input = NULL;
 }
 
 void printTable(tabl t) {
@@ -76,6 +81,24 @@ void lex_analyzer() {
 	}
 }
 
+void getLex() {
+	cur_lex.table = getLexNumber();
+	cur_lex.numberInTable = getLexNumber();
+}
+
+int getLexNumber() {
+	clear();
+	while (1) {
+		gc();
+		if (isdigit(ch))
+			add();
+		else if (ch == ',' || ch == '>')
+			return parseInt();
+		else if (ch == EOF)
+			return 0;
+	}
+}
+
 void delimiterParser() {
 	int indexInTable;
 	char firstDel[2];
@@ -88,7 +111,7 @@ void delimiterParser() {
 	clear();
 
 	if (isspace(ch)) {
-		printf("%c", ch);
+		fprintf(output, "%c", ch);
 		return;
 	}
 
@@ -147,7 +170,7 @@ void makelex() {
 }
 
 void makeInternalRep(int tableNum, int numberInTable) {
-	fprintf(stdout, "<%d, %d>", tableNum, numberInTable);
+	fprintf(output, "<%d, %d>", tableNum, numberInTable);
 }
 
 int isConstant() {
@@ -189,19 +212,37 @@ int isLegalId() {
 	return isalpha(buf[0]) ? 1 : 0;
 }
 
-
-
 #pragma endregion
 
 #pragma region SYNTAX ANALYZER
 
-void syntax_manager() {
+int syntax_manager() {
+	if ((input = fopen("D:\\lex_analysis.txt", "r")) == NULL)
+		return NOT_FOUND;
 
+	fseek(input, 0, SEEK_SET);
 }
 
 #pragma endregion
 
 #pragma region UTILITY
+
+int parseInt() {
+	char c;
+	int number = 0;
+	int length;
+	length = strlen(buf);
+
+	for (int i = 0; i < length; i++) {
+		c = buf[i];
+		if (c == '\0')
+			continue;
+
+		number += (c - '0') * (int)pow(10, length - i - 1);
+	}
+
+	return number;
+}
 
 void error() {
 	printf("\nProhibited lexeme is found.\n");
