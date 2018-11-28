@@ -45,9 +45,6 @@ void clear();
 void add();
 void makelex();
 void gc();
-void tabl_init();
-void tabl_free();
-void error();
 void lex_analyzer();
 void makeInternalRep();
 void delimiterParser();
@@ -59,6 +56,10 @@ int isLegalId();
 int look(tabl t);
 int putl(tabl* t);
 int putnum();
+
+void error(int);
+void tabl_init();
+void tabl_free();
 
 void getLex();
 int syntax_manager();

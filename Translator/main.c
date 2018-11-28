@@ -68,7 +68,7 @@ void lex_analyzer() {
 				add();
 				gc();
 				if (ch == '.') 
-					error();
+					error(0);
 				else
 					continue;
 			}
@@ -122,7 +122,7 @@ void delimiterParser() {
 		clear();
 		strcpy(buf, firstDel);
 		if ((indexInTable = look(TD)) == NOT_FOUND)
-			error();
+			error(0);
 		fseek(input, -1, SEEK_CUR);
 	}
 
@@ -161,7 +161,7 @@ void makelex() {
 	}
 	else {
 		if (!isLegalId())
-			error();
+			error(0);
 		if ((indexInTable = look(TID)) == NOT_FOUND) {
 			indexInTable = putl(&TID);
 		}
@@ -244,8 +244,15 @@ int parseInt() {
 	return number;
 }
 
-void error() {
-	printf("\nProhibited lexeme is found.\n");
+void error(int error) {
+	switch (error) {
+	case 0:
+		printf("\nProhibited lexeme is found.\n");
+		break;
+	case 1:
+		printf("\nSyntax error.\n");
+		break;
+	}
 	system("PAUSE");
 	exit(0);
 }
