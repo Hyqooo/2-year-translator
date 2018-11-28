@@ -228,7 +228,7 @@ int syntax_manager() {
 	if ((input = fopen("D:\\lex_analysis.txt", "r")) == NULL)
 		return NOT_FOUND;
 
-	fseek(input, 0, SEEK_SET);
+	prog();
 }
 
 int prog() {
@@ -244,7 +244,6 @@ int prog() {
 	else
 		error(1);
 
-	getLex();
 	if (eq("BEGIN"))
 		stmtList();
 	else if (eq("FUNCTION"))
@@ -258,11 +257,40 @@ int prog() {
 }
 
 int progName() {
-
+	getLex();
+	if (!isId())
+		error(1);
 }
 
 int decList() {
+	while (1) {
+		dec();
 
+		getLex();
+		if (!eq(";"))
+			error(1);
+
+		getLex();
+		if (!isId())
+			return 0;
+	}
+}
+
+int dec() {
+	while (1) {
+		getLex();
+		if (isId()) {
+			// Push into stack
+			;
+		}else if (eq(":")) {
+			getLex();
+			if (eq("INTEGER") || eq("REAL"))
+				// Pop out of stack
+				;
+		}else {
+			error(1);
+		}
+	}
 }
 
 int stmtList() {
@@ -271,6 +299,11 @@ int stmtList() {
 
 int functionList() {
 
+}
+
+// return 0 - lexeme table != TID
+int isId() {
+	return cur_lex.table == TID.table_number;
 }
 
 int eq(char *s) {
