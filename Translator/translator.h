@@ -1,7 +1,3 @@
-/*
-	Заголовочный файл транслятора. Содержит таблицы, константы и описания функций
-*/
-
 #ifndef TRANSLATOR
 #define TRANSLATOR
 
@@ -24,9 +20,6 @@
 #define WORD_SIZE_IN_TABLE_TD 4
 #define NOT_FOUND -1
 
-/*
-	Прототипы
-*/
 void error(int);
 int parseInt();
 

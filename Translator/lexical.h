@@ -2,8 +2,8 @@
 #define LEXICAL
 
 /*
-	 table - номер таблицы
-	 numberInTable - номер лексемы в таблице
+	 table - table number
+	 numberInTable - lexeme number in the table
 */
 typedef struct lex {
 	int table;
@@ -11,12 +11,10 @@ typedef struct lex {
 }lex;
 
 /*
-	table - указатель на необходимую таблицу.
-	size - размер таблицы, необходим при проходе через таблицу.
-	word_size - максимальный размер одного слова в таблице,
-		при проходе, при разной длине слов возникает путаница, указатель попадает
-		не на первую строку в таблице.
-	table_number - номер таблицы для удобного вывода.
+	table - points to needed table
+	size - size of the table
+	word_size - maximum size of one word in the table
+	table_number - number of table from 1 to 4
 */
 typedef struct tabl {
 	char *table;

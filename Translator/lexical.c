@@ -1,7 +1,7 @@
 #include "lexical.h"
 #include "translator.h"
 
-// Таблица служебных слов.
+// Key words table
 char TW_char[][WORD_SIZE_IN_TABLE_TW] = {
 	"PROGRAM",
 	"VAR",
@@ -25,7 +25,7 @@ char TW_char[][WORD_SIZE_IN_TABLE_TW] = {
 	"END."
 };
 
-// Таблица разделителей.
+// Delimiters table
 char TD_char[][WORD_SIZE_IN_TABLE_TD] = {
 	",",
 	";",
@@ -42,7 +42,7 @@ char TD_char[][WORD_SIZE_IN_TABLE_TD] = {
 	")"
 };
 
-// Таблица идентификаторов и численных констант соответственно.
+// Identifiers table and numeric constants table respectively
 char **TID_char, **TNUM_char;
 
 extern char ch;
