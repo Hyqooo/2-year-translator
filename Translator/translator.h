@@ -5,6 +5,14 @@
 #ifndef TRANSLATOR
 #define TRANSLATOR
 
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
+
 #define MAX_ID_SIZE 64
 #define MAX_NUM_SIZE 15
 #define SIZE_OF_TW_TABLE 20
@@ -16,101 +24,10 @@
 #define WORD_SIZE_IN_TABLE_TD 4
 #define NOT_FOUND -1
 
-//	table - указатель на необходимую таблицу.
-//	size - размер таблицы, необходим при проходе через таблицу.
-//	word_size - максимальный размер одного слова в таблице,
-//		при проходе, при разной длине слов возникает путаница, указатель попадает
-//		не на первую строку в таблице.
-//	table_number - номер таблицы для удобного вывода.
-
-typedef struct tabl {
-	char *table;
-	int size;
-	int word_size;
-	int table_number;
-}tabl;
-
-// table - номер таблицы
-// numberInTable - номер лексемы в таблице 
-typedef struct lex {
-	int table;
-	int numberInTable;
-}lex;
-
-
 /*
 	Прототипы
 */
-void clear();
-void add();
-void makelex();
-void gc();
-void lex_analyzer();
-void makeInternalRep();
-void delimiterParser();
-void printTable();
-int getLexNumber();
-int lexManager();
-int isConstant();
-int isLegalId();
-int look(tabl t);
-int putl(tabl* t);
-int putnum();
-
 void error(int);
-void tabl_init();
-void tabl_free();
-
-void getLex();
-int syntax_manager();
-char *find();
-
 int parseInt();
 
-/*
-	Таблицы
-*/
-// Таблица служебных слов.
-char TW_char[][WORD_SIZE_IN_TABLE_TW] = {
-	"PROGRAM",
-	"VAR",
-	"BEGIN",
-	"END",
-	"INTEGER",
-	"REAL",
-	"READ",
-	"WRITE",
-	"FOR",
-	"DO",
-	"TO",
-	"FUNCTION",
-	"RETURN",
-	"IF",
-	"THEN",
-	"ELSE IF",
-	"OR",
-	"AND",
-	"DIV",
-	"END."
-};
-
-// Таблица разделителей.
-char TD_char[][WORD_SIZE_IN_TABLE_TD] = {
-	",",
-	";",
-	"+",
-	"-",
-	"*",
-	":=",
-	"==",
-	"!=",
-	">",
-	"<",
-	":",
-	"(",
-	")"
-};
-
-// Таблица идентификаторов и численных констант соответственно.
-char **TID_char, **TNUM_char;
 #endif // ! TRANSLATOR
