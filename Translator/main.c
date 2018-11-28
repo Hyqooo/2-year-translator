@@ -232,16 +232,44 @@ int syntax_manager() {
 }
 
 int prog() {
+	getLex();
 	if (eq("PROGRAM"))
-		progname();
+		progName();
 	else
-		return;
+		error(1);
 	
-	if (eq("VAR"));
+	getLex();
+	if (eq("VAR"))
+		decList();
+	else
+		error(1);
 
+	getLex();
+	if (eq("BEGIN"))
+		stmtList();
+	else if (eq("FUNCTION"))
+		functionList();
+	else
+		error(1);
+
+	getLex();
+	if (!eq("END."))
+		error(1);
 }
 
 int progName() {
+
+}
+
+int decList() {
+
+}
+
+int stmtList() {
+
+}
+
+int functionList() {
 
 }
 
