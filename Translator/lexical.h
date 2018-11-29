@@ -11,6 +11,15 @@ typedef struct lex {
 }lex;
 
 /*
+	isDeclared - Is variable delcared already?
+	type - type of the variable
+*/
+typedef struct record {
+	int isDeclared;
+	char *type;
+}record;
+
+/*
 	table - points to needed table
 	size - size of the table
 	word_size - maximum size of one word in the table
@@ -18,6 +27,7 @@ typedef struct lex {
 */
 typedef struct tabl {
 	char *table;
+	record *table_r;
 	int size;
 	int word_size;
 	int table_number;
