@@ -71,6 +71,7 @@ int decList() {
 			error(1);
 		}
 			
+		stackPointer = 0;
 	}
 }
 
@@ -82,9 +83,10 @@ int dec() {
 			while (stackPointer != 0) {
 				// Pop out of stack
 				int numberInTable = ipop();
-				if (TID.table_r[numberInTable].isDeclared == 1)
-					// Multiple declaration
+				// Multiple declaration
+				if (isDeclared(numberInTable))
 					error(1);
+				// Declaration
 				TID.table_r[numberInTable].isDeclared = 1;
 				strcpy(TID.table_r[numberInTable].type, find());
 			}
@@ -144,11 +146,20 @@ int stmt() {
 	}
 }
 
+// return 1, if declared
+int isDeclared(int i) {
+	return TID.table_r[i].isDeclared == 1 ? 1 : 0;
+}
 
 int read() {
 	getLex();
 	if (eq("(")) {
 		idList();
+		// Checks whether variables are declared
+		while (stackPointer != 0) {
+
+		}
+
 		if (!eq(")"))
 			// Missed ')'
 			error(1);
