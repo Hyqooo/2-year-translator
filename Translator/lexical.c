@@ -267,7 +267,7 @@ void tabl_init() {
 
 	TID_char = (char**)malloc(sizeof(char*) * SIZE_OF_TID_TABLE);
 	for (int i = 0; i < SIZE_OF_TID_TABLE; i++) {
-		TID_char[i] = (char*)malloc(sizeof(char) * MAX_NUM_SIZE);
+		TID_char[i] = (char*)malloc(sizeof(char) * MAX_ID_SIZE);
 	}
 	TID.table_r = (record *)malloc(sizeof(record) * SIZE_OF_TID_TABLE);
 
