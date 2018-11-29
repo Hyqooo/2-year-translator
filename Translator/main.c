@@ -1,5 +1,6 @@
 #include "lexical.h"
 #include "translator.h"
+#include "syntax.h"
 
 char buf[BUFFER_SIZE];
 char ch;
@@ -14,7 +15,8 @@ FILE *output = NULL;
 void main(int argc, char *argv[]) {
 	// Lexical analysis
 	lexManager();
-//	syntax_manager();
+	// Syntax + semantic analysis
+	syntax_manager();
 
 	printf("\n");
 	system("PAUSE");

@@ -2,6 +2,9 @@
 #include "lexical.h"
 #include "syntax.h"
 
+int decStack[STACK_SIZE];
+int stackPointer = 0;
+
 extern FILE *input;
 extern lex cur_lex;
 
@@ -62,13 +65,17 @@ int dec() {
 		getLex();
 		if (isId()) {
 			// Push into stack
-			;
+			ipush(cur_lex.numberInTable);
 		}
 		else if (eq(":")) {
 			getLex();
 			if (eq("INTEGER") || eq("REAL"))
 				// Pop out of stack
 				;
+			else
+				error(1);
+
+			break;
 		}
 		else {
 			error(1);
@@ -108,4 +115,14 @@ char* find() {
 		return TID.table + cur_lex.numberInTable * TID.word_size;
 		break;
 	}
+}
+
+void ipush(int i) {
+	decStack[stackPointer] = i;
+	stackPointer++;
+}
+
+int ipop() {
+	stackPointer--;
+	return decStack[stackPointer];
 }
