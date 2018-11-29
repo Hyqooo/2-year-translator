@@ -100,6 +100,7 @@ int dec() {
 	}
 }
 
+// May get next lexeme and not use it
 int idList() {
 	while (1) {
 		getLex();
@@ -123,7 +124,8 @@ int stmtList() {
 		
 		if (eq("END."))
 			break;
-
+		 
+		getLex();
 		if (!eq(";"))
 			// Expected ';'
 			error(1);
@@ -134,18 +136,22 @@ int stmt() {
 	getLex();
 
 	if (eq("READ")) {
-		
+		read();
 	}else if (eq("WRITE")) {
-
+		
 	}else if (eq("FOR")) {
 
 	}
 }
 
+
 int read() {
 	getLex();
 	if (eq("(")) {
-		
+		idList();
+		if (!eq(")"))
+			// Missed ')'
+			error(1);
 	}else {
 		// Missed '('
 		error(1);
