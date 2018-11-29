@@ -20,10 +20,6 @@ void main(int argc, char *argv[]) {
 	system("PAUSE");
 }
 
-#pragma region SYNTAX ANALYZER
-
-#pragma endregion
-
 #pragma region UTILITY
 
 int parseInt() {
