@@ -70,8 +70,6 @@ int decList() {
 			// Expected ';'
 			error(1);
 		}
-			
-		stackPointer = 0;
 	}
 }
 
@@ -104,6 +102,7 @@ int dec() {
 
 // May get next lexeme and not use it
 int idList() {
+	stackPointer = 0;
 	while (1) {
 		getLex();
 		if (isId()) {
@@ -115,6 +114,7 @@ int idList() {
 		}else if (eq("BEGIN")) {
 			break;
 		}else {
+			// Empty list of declarations
 			error(1);
 		}
 	}
@@ -152,12 +152,16 @@ int isDeclared(int i) {
 }
 
 int read() {
+	int numberInTable;
 	getLex();
 	if (eq("(")) {
 		idList();
 		// Checks whether variables are declared
 		while (stackPointer != 0) {
-
+			numberInTable = ipop();
+			if (TID.table_r[numberInTable].isDeclared != 1)
+				// Undeclared variable
+				error(1);
 		}
 
 		if (!eq(")"))
