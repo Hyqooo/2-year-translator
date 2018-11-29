@@ -46,7 +46,6 @@ int prog() {
 	else
 		error(1);
 
-	getLex();
 	if (!eq("END."))
 		// END is missed
 		error(1);
@@ -63,57 +62,94 @@ int decList() {
 	while (1) {
 		dec();
 
+		if (!eq("BEGIN"))
+			getLex();
+		else
+			break;
 		if (!eq(";")) {
-			if (eq("BEGIN"))
-				break;
-			else
-				// Expected ';'
-				error(1);
+			// Expected ';'
+			error(1);
 		}
 			
 	}
 }
 
 int dec() {
+	idList();
+	if (eq(":")) {
+		getLex();
+		if (eq("INTEGER") || eq("REAL")) {
+			while (stackPointer != 0) {
+				// Pop out of stack
+				int numberInTable = ipop();
+				if (TID.table_r[numberInTable].isDeclared == 1)
+					// Multiple declaration
+					error(1);
+				TID.table_r[numberInTable].isDeclared = 1;
+				strcpy(TID.table_r[numberInTable].type, find());
+			}
+		}else {
+			// Missed type
+			error(1);
+		}
+	}else if (eq("BEGIN")) {
+		return 1;
+	}else {
+		// Missed ':'
+		error(1);
+	}
+}
+
+int idList() {
 	while (1) {
 		getLex();
 		if (isId()) {
 			// Push into stack
 			ipush(cur_lex.numberInTable);
 			getLex();
-			if (!eq(",") && !eq(":")) {
-				// Expected ','
-				error(1);
-			}else if (stackPointer && eq(":")) {
-				getLex();
-				if (eq("INTEGER") || eq("REAL")) {
-					while (stackPointer != 0) {
-						// Pop out of stack
-						int numberInTable = ipop();
-						if (TID.table_r[numberInTable].isDeclared == 1)
-							// Multiple declaration
-							error(1);
-						TID.table_r[numberInTable].isDeclared = 1;
-						strcpy(TID.table_r[numberInTable].type, find());
-					}
-				}
-				else {
-					// Missed type
-					error(1);
-				}
-
-				stackPointer = 0;
-				getLex();
+			if (!eq(","))
 				break;
-			}
+		}else if (eq("BEGIN")) {
+			break;
 		}else {
-			return 1;
+			error(1);
 		}
 	}
 }
 
 int stmtList() {
+	while (1) {
+		stmt();
+		
+		if (eq("END."))
+			break;
 
+		if (!eq(";"))
+			// Expected ';'
+			error(1);
+	}
+}
+
+int stmt() {
+	getLex();
+
+	if (eq("READ")) {
+		
+	}else if (eq("WRITE")) {
+
+	}else if (eq("FOR")) {
+
+	}
+}
+
+int read() {
+	getLex();
+	if (eq("(")) {
+		
+	}else {
+		// Missed '('
+		error(1);
+	}
 }
 
 int functionList() {
