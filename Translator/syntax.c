@@ -3,7 +3,11 @@
 #include "syntax.h"
 
 int decStack[STACK_SIZE];
-int stackPointer = 0;
+int decStackPointer = 0;
+
+char *typeStack[STACK_SIZE];
+int typeStackPointer = 0;
+
 
 extern FILE *input;
 extern lex cur_lex;
@@ -78,7 +82,7 @@ int dec() {
 	if (eq(":")) {
 		getLex();
 		if (eq("INTEGER") || eq("REAL")) {
-			while (stackPointer != 0) {
+			while (decStackPointer != 0) {
 				// Pop out of stack
 				int numberInTable = ipop();
 				// Multiple declaration
@@ -102,7 +106,7 @@ int dec() {
 
 // May get next lexeme and not use it
 int idList() {
-	stackPointer = 0;
+	decStackPointer = 0;
 	while (1) {
 		getLex();
 		if (isId()) {
@@ -150,7 +154,78 @@ int stmt() {
 }
 
 int assign() {
+	lex leftSideVar = cur_lex;
+	if (!isDeclared(cur_lex.numberInTable))
+		// Undeclared variable
+		error(1);
+
+	getLex();
+	if (!eq(":="))
+		// Missed ':='
+		error(1);
+
+	expression();
+}
+
+int expression() {
+	char *type;
+	getLex();
+
+	if (isId()) {
+		if (!isDeclared(cur_lex.numberInTable))
+			// Undeclared variable
+			error(1);
+
+		type = TID.table_r[cur_lex.numberInTable].type;
+		tpush(type);
+	}else if (isNum()) {
+
+	}else if (eq("(")) {
+		expression();
+		getLex();
+		if (!eq(")"))
+			// Missing ')'
+			error(1);
+	}else if (eq(";")) {
+		return 1;
+	}else {
+		// Undefined right side of exp
+		error(1);
+	}
+}
+
+
+//	Unallowed only assign operands of different types
+char * isCompatible(char *op, char *type_1, char *type_2) {
+	if (!strcmp(op, ":=")) {
+		if (!strcmp(type_1, type_2))
+			return type_1;
+		else
+			return "no";
+	}
+
+	if (strcmp(type_1, "REAL") || strcmp(type_2, "REAL"))
+		return "REAL";
+	else
+		return "INTEGER";
 	
+	return 1;
+}
+
+void checkOp() {
+	char *op, *type_1, *type_2, *res;
+
+	type_2 = tpop();
+	op = tpop();
+	type_1 = tpop();
+
+	res = isCompatible(op, type_1, type_2);
+
+	if (strcmp(res, "no"))
+		tpush(res);
+	else
+		// Assignment operands of different types
+		error(1);
 }
 
 // return 1, if declared
@@ -164,7 +239,7 @@ int read() {
 	if (eq("(")) {
 		idList();
 		// Checks whether variables are declared
-		while (stackPointer != 0) {
+		while (decStackPointer != 0) {
 			numberInTable = ipop();
 			if (TID.table_r[numberInTable].isDeclared != 1)
 				// Undeclared variable
@@ -186,7 +261,7 @@ int write() {
 	if (eq("(")) {
 		idList();
 		// Checks whether variables are declared
-		while (stackPointer != 0) {
+		while (decStackPointer != 0) {
 			numberInTable = ipop();
 			if (TID.table_r[numberInTable].isDeclared != 1)
 				// Undeclared variable
@@ -216,6 +291,11 @@ int isId() {
 	return cur_lex.table == TID.table_number;
 }
 
+// return 0 - lexeme talbe != TNUM
+int isNum() {
+	return cur_lex.table == TNUM.table_number;
+}
+
 int eq(char *s) {
 	return !strcmp(find(), s);
 }
@@ -238,11 +318,21 @@ char* find() {
 }
 
 void ipush(int i) {
-	decStack[stackPointer] = i;
-	stackPointer++;
+	decStack[decStackPointer] = i;
+	decStackPointer++;
 }
 
 int ipop() {
-	stackPointer--;
-	return decStack[stackPointer];
+	decStackPointer--;
+	return decStack[decStackPointer];
+}
+
+void tpush(char *type) {
+	typeStack[typeStackPointer] = type;
+	typeStackPointer++;
+}
+
+char* tpop() {
+	typeStackPointer--;
+	return typeStack[typeStackPointer];
 }

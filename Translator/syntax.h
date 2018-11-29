@@ -16,6 +16,8 @@ int functionList();
 int ipop();
 void ipush(int);
 void getLex();
+void tpush(char *);
 char* find();
+char* tpop();
 
 #endif // !SYNTAX_H
