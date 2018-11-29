@@ -142,8 +142,15 @@ int stmt() {
 	}else if (eq("WRITE")) {
 		write();
 	}else if (eq("FOR")) {
-
+		for_loop();
+	}else if (isId()) {
+		// assign
+		assign();
 	}
+}
+
+int assign() {
+	
 }
 
 // return 1, if declared
@@ -194,6 +201,10 @@ int write() {
 		// Missed '('
 		error(1);
 	}
+}
+
+int for_loop() {
+
 }
 
 int functionList() {
