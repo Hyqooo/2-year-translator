@@ -16,7 +16,7 @@ typedef struct lex {
 */
 typedef struct record {
 	int isDeclared;
-	char *type;
+	char type[10];
 }record;
 
 /*

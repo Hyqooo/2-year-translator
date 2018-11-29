@@ -13,6 +13,14 @@ int syntax_manager() {
 		return NOT_FOUND;
 
 	prog();
+
+	prVar();
+}
+
+int prVar() {
+	for (int i = 0; i < TID.size; i++) {
+		printf("%d-%s\n", TID.table_r[i].isDeclared, TID.table_r[i].type);
+	}
 }
 
 int prog() {
@@ -20,14 +28,17 @@ int prog() {
 	if (eq("PROGRAM"))
 		progName();
 	else
+		// PROGRAM is missed
 		error(1);
 
 	getLex();
 	if (eq("VAR"))
 		decList();
 	else
+		// VAR is missed
 		error(1);
 
+	// == here ==
 	if (eq("BEGIN"))
 		stmtList();
 	else if (eq("FUNCTION"))
@@ -37,6 +48,7 @@ int prog() {
 
 	getLex();
 	if (!eq("END."))
+		// END is missed
 		error(1);
 }
 
@@ -44,19 +56,21 @@ int progName() {
 	getLex();
 	if (!isId())
 		error(1);
+	TID.table_r[cur_lex.numberInTable].isDeclared = 1;
 }
 
 int decList() {
 	while (1) {
 		dec();
 
-		getLex();
-		if (!eq(";"))
-			error(1);
-
-		getLex();
-		if (!isId())
-			return 0;
+		if (!eq(";")) {
+			if (eq("BEGIN"))
+				break;
+			else
+				// Expected ';'
+				error(1);
+		}
+			
 	}
 }
 
@@ -66,19 +80,34 @@ int dec() {
 		if (isId()) {
 			// Push into stack
 			ipush(cur_lex.numberInTable);
-		}
-		else if (eq(":")) {
 			getLex();
-			if (eq("INTEGER") || eq("REAL"))
-				// Pop out of stack
-				;
-			else
+			if (!eq(",") && !eq(":")) {
+				// Expected ','
 				error(1);
+			}else if (stackPointer && eq(":")) {
+				getLex();
+				if (eq("INTEGER") || eq("REAL")) {
+					while (stackPointer != 0) {
+						// Pop out of stack
+						int numberInTable = ipop();
+						if (TID.table_r[numberInTable].isDeclared == 1)
+							// Multiple declaration
+							error(1);
+						TID.table_r[numberInTable].isDeclared = 1;
+						strcpy(TID.table_r[numberInTable].type, find());
+					}
+				}
+				else {
+					// Missed type
+					error(1);
+				}
 
-			break;
-		}
-		else {
-			error(1);
+				stackPointer = 0;
+				getLex();
+				break;
+			}
+		}else {
+			return 1;
 		}
 	}
 }
