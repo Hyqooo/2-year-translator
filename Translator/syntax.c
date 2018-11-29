@@ -140,7 +140,7 @@ int stmt() {
 	if (eq("READ")) {
 		read();
 	}else if (eq("WRITE")) {
-		
+		write();
 	}else if (eq("FOR")) {
 
 	}
@@ -168,6 +168,29 @@ int read() {
 			// Missed ')'
 			error(1);
 	}else {
+		// Missed '('
+		error(1);
+	}
+}
+
+int write() {
+	int numberInTable;
+	getLex();
+	if (eq("(")) {
+		idList();
+		// Checks whether variables are declared
+		while (stackPointer != 0) {
+			numberInTable = ipop();
+			if (TID.table_r[numberInTable].isDeclared != 1)
+				// Undeclared variable
+				error(1);
+		}
+
+		if (!eq(")"))
+			// Missed ')'
+			error(1);
+	}
+	else {
 		// Missed '('
 		error(1);
 	}
