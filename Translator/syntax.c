@@ -169,34 +169,48 @@ int assign() {
 
 int expression() {
 	char *type;
-	getLex();
+	
+	while (1) {
+		if (!eq(";"))
+			getLex();
+		if (isId()) {
+			if (!isDeclared(cur_lex.numberInTable))
+				// Undeclared variable
+				error(1);
 
-	if (isId()) {
-		if (!isDeclared(cur_lex.numberInTable))
-			// Undeclared variable
+			type = TID.table_r[cur_lex.numberInTable].type;
+			tpush(type);
+		}else if (isNum()) {
+			// Push type of constant into stack
+			type = typeOfConstant();
+			tpush(type);
+		}else if (eq("(")) {
+			expression();
+			getLex();
+			if (!eq(")"))
+				// Missing ')'
+				error(1);
+		}else if (eq(";")) {
+			return 1;
+		}else {
+			// Undefined right side of exp
 			error(1);
+		}
 
-		type = TID.table_r[cur_lex.numberInTable].type;
-		tpush(type);
-	}else if (isNum()) {
-
-	}else if (eq("(")) {
-		expression();
-		getLex();
-		if (!eq(")"))
-			// Missing ')'
-			error(1);
-	}else if (eq(";")) {
-		return 1;
-	}else {
-		// Undefined right side of exp
-		error(1);
+		operationSign();
 	}
 }
 
+int operationSign() {
+	getLex();
+
+	if (!eq("*") && !eq("+") && !eq("DIV") && !eq("-") && !eq(";"))
+		// Operation sign is missed
+		error(1);
+}
 
 //	Unallowed only assign operands of different types
-char * isCompatible(char *op, char *type_1, char *type_2) {
+char* isCompatible(char *op, char *type_1, char *type_2) {
 	if (!strcmp(op, ":=")) {
 		if (!strcmp(type_1, type_2))
 			return type_1;
@@ -284,6 +298,17 @@ int for_loop() {
 
 int functionList() {
 
+}
+
+// Type of the constant
+char *typeOfConstant() {
+	for (int i = 0; i < MAX_NUM_SIZE; i++) {
+		// TNUM.table[cur_lex.numberInTable][i]
+		if(*(TNUM.table + cur_lex.numberInTable * TNUM.word_size + i) == '.')
+			return "REAL";
+	}
+
+	return "INTEGER";
 }
 
 // return 0 - lexeme table != TID

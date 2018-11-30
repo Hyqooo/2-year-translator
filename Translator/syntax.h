@@ -18,6 +18,7 @@ void ipush(int);
 void getLex();
 void tpush(char *);
 char* find();
+char *typeOfConstant();
 char* tpop();
 
 #endif // !SYNTAX_H

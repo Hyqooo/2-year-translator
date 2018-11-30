@@ -89,11 +89,7 @@ void lex_analyzer() {
 		if (!isalnum(ch)) {
 			if (ch == '.') {
 				add();
-				gc();
-				if (ch == '.')
-					error(0);
-				else
-					continue;
+				continue;
 			}
 			makelex();
 			delimiterParser();
@@ -259,6 +255,7 @@ void tabl_init() {
 	for (int i = 0; i < SIZE_OF_TNUM_TABLE; i++) {
 		TNUM_char[i] = (char*)malloc(sizeof(char) * MAX_NUM_SIZE);
 	}
+	TNUM.table_r = (record *)malloc(sizeof(record) * SIZE_OF_TNUM_TABLE);
 
 	TNUM.table = (char *)TNUM_char;
 	TNUM.size = 0;
