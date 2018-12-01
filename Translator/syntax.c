@@ -175,7 +175,8 @@ int stmt() {
 }
 
 int assign() {
-	lex leftSideVar = cur_lex;
+	typeStackPointer = 0;
+	tpush(TID.table_r[cur_lex.numberInTable].type);
 	if (!isDeclared(cur_lex.numberInTable))
 		// Undeclared variable
 		error("Undeclared variable");
@@ -185,17 +186,17 @@ int assign() {
 		// Missed ':='
 		error("Missed ':='");
 
+	tpush(":=");
 	expression();
 
-
+	// Checks compatible of operands
+	checkOp();
 }
 
 int expression() {
 	char *type;
 	int bracketCount = 0;
 	int isSignNow = 0;
-
-	typeStackPointer = 0;
 
 	while (1) {
 		getLex();
@@ -240,6 +241,7 @@ int operationSign() {
 	if (!(eq("*") || eq("-") || eq("+") || eq("DIV")))
 		return 0;
 
+	tpush("*");
 	return 1;
 }
 
@@ -252,7 +254,7 @@ char* isCompatible(char *op, char *type_1, char *type_2) {
 			return "no";
 	}
 
-	if (strcmp(type_1, "REAL") || strcmp(type_2, "REAL"))
+	if (!strcmp(type_1, "REAL") || !strcmp(type_2, "REAL"))
 		return "REAL";
 	else
 		return "INTEGER";
@@ -263,17 +265,19 @@ char* isCompatible(char *op, char *type_1, char *type_2) {
 void checkOp() {
 	char *op, *type_1, *type_2, *res;
 
-	type_2 = tpop();
-	op = tpop();
-	type_1 = tpop();
+	while (typeStackPointer != 1) {
+		type_2 = tpop();
+		op = tpop();
+		type_1 = tpop();
 
-	res = isCompatible(op, type_1, type_2);
+		res = isCompatible(op, type_1, type_2);
 
-	if (strcmp(res, "no"))
-		tpush(res);
-	else
-		// Assignment operands of different types
-		error(1);
+		if (strcmp(res, "no"))
+			tpush(res);
+		else
+			// Assignment operands of different types
+			error("Assignment operands of different types");
+	}
 }
 
 // return 1, if declared
@@ -395,7 +399,9 @@ void tpush(char *type) {
 
 char* tpop() {
 	typeStackPointer--;
-	return typeStack[typeStackPointer];
+	char * type = typeStack[typeStackPointer];
+	typeStack[typeStackPointer] = NULL;
+	return type;
 }
 
 int getBack() {

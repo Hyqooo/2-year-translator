@@ -17,6 +17,7 @@ int ipop();
 void ipush(int);
 void getLex();
 void tpush(char *);
+void checkOp();
 char* find();
 char *typeOfConstant();
 char* tpop();
