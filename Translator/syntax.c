@@ -193,13 +193,31 @@ int assign() {
 int expression() {
 	char *type;
 	int bracketCount = 0;
+	int isSignNow = 0;
 
 	typeStackPointer = 0;
 
 	while (1) {
 		getLex();
 
-		if (eq(";")) {
+ 		if (isId() && !isSignNow) {
+			if (!isDeclared(cur_lex.numberInTable))
+				// Undeclared variable
+				error("Undeclared variable");
+
+			type = TID.table_r[cur_lex.numberInTable].type;
+			tpush(type);
+			isSignNow = 1;
+		}else if (isNum() && !isSignNow) {
+			// Push type of constant into stack
+			type = typeOfConstant();
+			tpush(type);
+			isSignNow = 1;
+		}else if (eq("(")) {
+			bracketCount++;
+		}else if (eq(")") && isSignNow) {
+			bracketCount--;
+		}else if (eq(";") && isSignNow) {
 			if (bracketCount > 0)
 				error("Expected ')'");
 			else if (bracketCount < 0)
@@ -211,25 +229,12 @@ int expression() {
 
 			getBack();
 			return 1;
-		}
-
-		if (isId()) {
-			if (!isDeclared(cur_lex.numberInTable))
-				// Undeclared variable
-				error("Undeclared variable");
-
-			type = TID.table_r[cur_lex.numberInTable].type;
-			tpush(type);
-		}else if (isNum()) {
-			// Push type of constant into stack
-			type = typeOfConstant();
-			tpush(type);
-		}else if (eq("(")) {
-			bracketCount++;
-		}else if (eq(")")) {
-			bracketCount--;
-		}else {
+		}else if (isSignNow) {
 			operationSign();
+			isSignNow = 0;
+		}else {
+			// Operand is missed
+			error("Operand is missed");
 		}
 	}
 }
