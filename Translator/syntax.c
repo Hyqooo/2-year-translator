@@ -146,7 +146,7 @@ int stmtList() {
 			// Expected ';'
 			error("Expected ';'");
 		getLex();
-		if (eq("END.")) {
+		if (eq("END.") || eq("END")) {
 			getBack();
 			break;
 		}else {
@@ -333,6 +333,38 @@ int write() {
 }
 
 int for_loop() {
+	getLex();
+	assign();
+
+	getLex();
+	if (!eq("TO"))
+		// Missed TO
+		error("Missed TO");
+
+	expression();
+
+	getLex();
+
+	if (!eq("DO"))
+		// Missed DO
+		error("Missed DO");
+
+	body();
+}
+
+int body() {
+	getLex();
+
+	if (eq("BEGIN")) {
+		stmtList();
+		getLex();
+		if (!eq("END"))
+			// Missed END
+			error("Missed END");;
+	}else {
+		getBack();
+		stmt();
+	}
 
 }
 
