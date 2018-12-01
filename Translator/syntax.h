@@ -3,6 +3,13 @@
 #define SYNTAX_H
 
 #define STACK_SIZE 20
+#define MAX_AMOUNT_OF_FUNCTIONS 10
+
+typedef struct function {
+	char name[MAX_ID_SIZE];
+	char *variables[SIZE_OF_TID_TABLE];
+	record varDeclarations;
+}function;
 
 int syntax_manager();
 int dec();

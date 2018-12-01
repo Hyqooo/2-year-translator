@@ -8,6 +8,8 @@ int decStackPointer = 0;
 char *typeStack[STACK_SIZE];
 int typeStackPointer = 0;
 
+function functions[MAX_AMOUNT_OF_FUNCTIONS];
+
 extern getBackPosition;
 extern FILE *input;
 extern lex cur_lex;
@@ -30,7 +32,7 @@ int prVar() {
 int prog() {
 	getLex();
 	if (eq("PROGRAM"))
-		progName();
+		name();
 	else
 		// PROGRAM is missed
 		error("PROGRAM is missed");
@@ -42,24 +44,28 @@ int prog() {
 		// VAR is missed
 		error("VAR is missed");
 
-	// == here ==
 	getLex();
-	if (eq("BEGIN"))
-		stmtList();
-	else if (eq("FUNCTION"))
+	if (eq("FUNCTION")) {
+		// == here ==
 		functionList();
-	else
+	}
+	
+	getLex();
+	if (eq("BEGIN")) {
+		stmtList();
+	}else {
 		error("BEGIN or function declaration is expected");
+	}
 
 	if (!eq("END."))
 		// END is missed
 		error("END is missed");
 }
 
-int progName() {
+int name() {
 	getLex();
 	if (!isId())
-		error("Prohibited name of the program");
+		error("Prohibited name");
 	TID.table_r[cur_lex.numberInTable].isDeclared = 1;
 	strcpy(TID.table_r[cur_lex.numberInTable].type, "name");
 }
@@ -146,7 +152,7 @@ int stmtList() {
 			// Expected ';'
 			error("Expected ';'");
 		getLex();
-		if (eq("END.") || eq("END")) {
+		if (eq("END.") || eq("END") || eq("RETURN")) {
 			getBack();
 			break;
 		}else {
@@ -167,6 +173,8 @@ int stmt() {
 	}else if (isId()) {
 		// assign
 		assign();
+	}else if (eq("FUNCTION")) {
+		functionList();
 	}else {
 		// Undefined statement 
 		error("Undefined statement");
@@ -369,7 +377,76 @@ int body() {
 }
 
 int functionList() {
+	while (1) {
+		func();
 
+		getLex();
+		if (!eq("FUNCTION") && !eq("BEGIN")) {
+			error("BEGIN or function declaration is expected");
+		}else if (eq("BEGIN")) {
+			getBack();
+			return 1;
+		}
+	}
+}
+
+int func() {
+	// Function name
+	name();
+
+	getLex();
+	if (!eq("("))
+		error("Missed '('");
+
+	// Arguments of function
+	argList();
+
+	getLex();
+	if (!eq(")"))
+		error("Missed ')'");
+
+	getLex();
+	if (!eq(":"))
+		error("Missed ':' in function type");
+
+	getLex();
+	if (!eq("REAL") && !eq("INTEGER"))
+		error("Function type is undefined");
+	
+	getLex();
+	if (!eq("BEGIN"))
+		error("BEGIN is expected");
+
+	stmtList();
+
+	getLex();
+	if (!eq("RETURN"))
+		error("function must return the value");
+
+	expression();
+
+	getLex();
+	if (!eq(";"))
+		error("Missed ';'");
+
+	getLex();
+	if (!eq("END"))
+		error("END is missed");
+}
+
+int argList() {
+	while (1) {
+		dec();
+
+		getLex();
+		if (!eq(",") && !eq(")"))
+			error("Missed ','");
+
+		if (eq(")")) {
+			getBack();
+			break;
+		}
+	}
 }
 
 // Type of the constant
