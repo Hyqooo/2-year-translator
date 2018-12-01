@@ -54,6 +54,8 @@ extern FILE *output;
 
 lex cur_lex;
 
+long getBackPosition;
+
 int lexManager() {
 	tabl_init();
 
@@ -101,6 +103,7 @@ void lex_analyzer() {
 }
 
 void getLex() {
+	getBackPosition = ftell(input);
 	cur_lex.table = getLexNumber();
 	cur_lex.numberInTable = getLexNumber();
 }

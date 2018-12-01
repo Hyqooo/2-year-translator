@@ -41,15 +41,8 @@ int parseInt() {
 	return number;
 }
 
-void error(int error) {
-	switch (error) {
-	case 0:
-		printf("\nProhibited lexeme is found.\n");
-		break;
-	case 1:
-		printf("\nSyntax error.\n");
-		break;
-	}
+void error(char *error) {
+	printf("%s\n", error);
 	system("PAUSE");
 	exit(0);
 }

@@ -8,7 +8,7 @@ int decStackPointer = 0;
 char *typeStack[STACK_SIZE];
 int typeStackPointer = 0;
 
-
+extern getBackPosition;
 extern FILE *input;
 extern lex cur_lex;
 
@@ -33,65 +33,71 @@ int prog() {
 		progName();
 	else
 		// PROGRAM is missed
-		error(1);
+		error("PROGRAM is missed");
 
+	// == here ==
 	getLex();
 	if (eq("VAR"))
 		decList();
 	else
 		// VAR is missed
-		error(1);
+		error("VAR is missed");
 
-	// == here ==
+	getLex();
 	if (eq("BEGIN"))
 		stmtList();
 	else if (eq("FUNCTION"))
 		functionList();
 	else
-		error(1);
+		error("BEGIN or function declaration is expected");
 
 	if (!eq("END."))
 		// END is missed
-		error(1);
+		error("END is missed");
 }
 
 int progName() {
 	getLex();
 	if (!isId())
-		error(1);
+		error("Prohibited name of the program");
 	TID.table_r[cur_lex.numberInTable].isDeclared = 1;
+	strcpy(TID.table_r[cur_lex.numberInTable].type, "name");
 }
 
 int decList() {
 	while (1) {
 		dec();
 
-		if (!eq("BEGIN"))
-			getLex();
-		else
+		getLex();
+		if (!eq(";"))
+			// Missed ';'
+			error("Missed ';'");
+
+		getLex();
+		if (!isId()) {
+			// There's no other declarations
+			getBack();
 			break;
-		if (!eq(";")) {
-			// Expected ';'
-			error(1);
+		}else {
+			getBack();
 		}
 	}
 }
 
 int dec() {
 	idList();
+	getLex();
 	if (eq(":")) {
 		getLex();
 		if (eq("INTEGER") || eq("REAL")) {
 			defineType();
 		}else {
 			// Missed type
-			error(1);
+			error("Missed type");
 		}
-	}else if (eq("BEGIN")) {
-		return 1;
 	}else {
 		// Missed ':'
-		error(1);
+		error("Missed ':'");
 	}
 }
 
@@ -101,7 +107,7 @@ int defineType() {
 		int numberInTable = ipop();
 		// Multiple declaration
 		if (isDeclared(numberInTable))
-			error(1);
+			error("Multiple declaration");
 		// Declaration
 		TID.table_r[numberInTable].isDeclared = 1;
 		strcpy(TID.table_r[numberInTable].type, find());
@@ -117,15 +123,14 @@ int idList() {
 			// Push into stack
 			ipush(cur_lex.numberInTable);
 			getLex();
-			if (!eq(","))
+			if (!eq(",")) {
+				// Parsing is probably done
+				getBack();
 				break;
-		}
-		else if (eq("BEGIN")) {
-			break;
-		}
-		else {
-			// Empty list of declarations
-			error(1);
+			}
+		}else {
+			// Incomplete declaration list
+			error("Incomplete declaration list");
 		}
 	}
 }
@@ -367,4 +372,8 @@ void tpush(char *type) {
 char* tpop() {
 	typeStackPointer--;
 	return typeStack[typeStackPointer];
+}
+
+int getBack() {
+	fseek(input, getBackPosition, SEEK_SET);
 }
