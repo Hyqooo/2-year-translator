@@ -82,16 +82,7 @@ int dec() {
 	if (eq(":")) {
 		getLex();
 		if (eq("INTEGER") || eq("REAL")) {
-			while (decStackPointer != 0) {
-				// Pop out of stack
-				int numberInTable = ipop();
-				// Multiple declaration
-				if (isDeclared(numberInTable))
-					error(1);
-				// Declaration
-				TID.table_r[numberInTable].isDeclared = 1;
-				strcpy(TID.table_r[numberInTable].type, find());
-			}
+			defineType();
 		}else {
 			// Missed type
 			error(1);
@@ -101,6 +92,19 @@ int dec() {
 	}else {
 		// Missed ':'
 		error(1);
+	}
+}
+
+int defineType() {
+	while (decStackPointer != 0) {
+		// Pop out of stack
+		int numberInTable = ipop();
+		// Multiple declaration
+		if (isDeclared(numberInTable))
+			error(1);
+		// Declaration
+		TID.table_r[numberInTable].isDeclared = 1;
+		strcpy(TID.table_r[numberInTable].type, find());
 	}
 }
 
@@ -115,15 +119,18 @@ int idList() {
 			getLex();
 			if (!eq(","))
 				break;
-		}else if (eq("BEGIN")) {
+		}
+		else if (eq("BEGIN")) {
 			break;
-		}else {
+		}
+		else {
 			// Empty list of declarations
 			error(1);
 		}
 	}
 }
 
+// Stmt control ';'
 int stmtList() {
 	while (1) {
 		stmt();
@@ -169,10 +176,9 @@ int assign() {
 
 int expression() {
 	char *type;
-	
+
 	while (1) {
-		if (!eq(";"))
-			getLex();
+		getLex();
 		if (isId()) {
 			if (!isDeclared(cur_lex.numberInTable))
 				// Undeclared variable
@@ -190,14 +196,15 @@ int expression() {
 			if (!eq(")"))
 				// Missing ')'
 				error(1);
-		}else if (eq(";")) {
-			return 1;
 		}else {
 			// Undefined right side of exp
 			error(1);
 		}
 
 		operationSign();
+		if (eq(";")) {
+			return 1;
+		}
 	}
 }
 
