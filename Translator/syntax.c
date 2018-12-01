@@ -178,25 +178,45 @@ int assign() {
 	lex leftSideVar = cur_lex;
 	if (!isDeclared(cur_lex.numberInTable))
 		// Undeclared variable
-		error(1);
+		error("Undeclared variable");
 
 	getLex();
 	if (!eq(":="))
 		// Missed ':='
-		error(1);
+		error("Missed ':='");
 
 	expression();
+
+
 }
 
 int expression() {
 	char *type;
+	int bracketCount = 0;
+
+	typeStackPointer = 0;
 
 	while (1) {
 		getLex();
+
+		if (eq(";")) {
+			if (bracketCount > 0)
+				error("Expected ')'");
+			else if (bracketCount < 0)
+				error("Expected '('");
+
+			if (typeStackPointer == 0)
+				// Empty rigth side
+				error("Right side is empty");
+
+			getBack();
+			return 1;
+		}
+
 		if (isId()) {
 			if (!isDeclared(cur_lex.numberInTable))
 				// Undeclared variable
-				error(1);
+				error("Undeclared variable");
 
 			type = TID.table_r[cur_lex.numberInTable].type;
 			tpush(type);
@@ -205,29 +225,19 @@ int expression() {
 			type = typeOfConstant();
 			tpush(type);
 		}else if (eq("(")) {
-			expression();
-			getLex();
-			if (!eq(")"))
-				// Missing ')'
-				error(1);
+			bracketCount++;
+		}else if (eq(")")) {
+			bracketCount--;
 		}else {
-			// Undefined right side of exp
-			error(1);
-		}
-
-		operationSign();
-		if (eq(";")) {
-			return 1;
+			operationSign();
 		}
 	}
 }
 
 int operationSign() {
-	getLex();
-
-	if (!eq("*") && !eq("+") && !eq("DIV") && !eq("-") && !eq(";"))
-		// Operation sign is missed
-		error(1);
+	if (!(eq("*") || eq("-") || eq("+") || eq("DIV")))
+		// Undefined expression
+		error("Undefined expression");
 }
 
 //	Unallowed only assign operands of different types
