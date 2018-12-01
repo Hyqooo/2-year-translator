@@ -20,7 +20,7 @@
 #define WORD_SIZE_IN_TABLE_TD 4
 #define NOT_FOUND -1
 
-void error(int);
+void error(char *);
 int parseInt();
 
 #endif // ! TRANSLATOR
