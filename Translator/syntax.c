@@ -35,7 +35,6 @@ int prog() {
 		// PROGRAM is missed
 		error("PROGRAM is missed");
 
-	// == here ==
 	getLex();
 	if (eq("VAR"))
 		decList();
@@ -43,6 +42,7 @@ int prog() {
 		// VAR is missed
 		error("VAR is missed");
 
+	// == here ==
 	getLex();
 	if (eq("BEGIN"))
 		stmtList();
@@ -101,6 +101,7 @@ int dec() {
 	}
 }
 
+// Give to all variables within the stack the type
 int defineType() {
 	while (decStackPointer != 0) {
 		// Pop out of stack
@@ -114,7 +115,7 @@ int defineType() {
 	}
 }
 
-// May get next lexeme and not use it
+// Parse string of variable
 int idList() {
 	decStackPointer = 0;
 	while (1) {
@@ -139,14 +140,18 @@ int idList() {
 int stmtList() {
 	while (1) {
 		stmt();
-		
-		if (eq("END."))
-			break;
 		 
 		getLex();
 		if (!eq(";"))
 			// Expected ';'
-			error(1);
+			error("Expected ';'");
+		getLex();
+		if (eq("END.")) {
+			getBack();
+			break;
+		}else {
+			getBack();
+		}
 	}
 }
 
@@ -162,7 +167,11 @@ int stmt() {
 	}else if (isId()) {
 		// assign
 		assign();
+	}else {
+		// Undefined statement 
+		error("Undefined statement");
 	}
+
 }
 
 int assign() {
@@ -269,15 +278,16 @@ int read() {
 			numberInTable = ipop();
 			if (TID.table_r[numberInTable].isDeclared != 1)
 				// Undeclared variable
-				error(1);
+				error("Undeclared variable");
 		}
 
+		getLex();
 		if (!eq(")"))
 			// Missed ')'
-			error(1);
+			error("Missed ')'");
 	}else {
 		// Missed '('
-		error(1);
+		error("Missed '('");
 	}
 }
 
@@ -291,16 +301,17 @@ int write() {
 			numberInTable = ipop();
 			if (TID.table_r[numberInTable].isDeclared != 1)
 				// Undeclared variable
-				error(1);
+				error("Undeclared variable");
 		}
 
+		getLex();
 		if (!eq(")"))
 			// Missed ')'
-			error(1);
+			error("Missed ')'");
 	}
 	else {
 		// Missed '('
-		error(1);
+		error("Missed '('");
 	}
 }
 
