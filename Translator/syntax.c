@@ -217,20 +217,16 @@ int expression() {
 			bracketCount++;
 		}else if (eq(")") && isSignNow) {
 			bracketCount--;
-		}else if (eq(";") && isSignNow) {
-			if (bracketCount > 0)
-				error("Expected ')'");
-			else if (bracketCount < 0)
-				error("Expected '('");
-
-			if (typeStackPointer == 0)
-				// Empty rigth side
-				error("Right side is empty");
-
-			getBack();
-			return 1;
 		}else if (isSignNow) {
-			operationSign();
+			if (!operationSign()) {
+				if (bracketCount > 0)
+					error("Expected ')'");
+				else if (bracketCount < 0)
+					error("Expected '('");
+
+				getBack();
+				return 1;
+			}
 			isSignNow = 0;
 		}else {
 			// Operand is missed
@@ -240,9 +236,11 @@ int expression() {
 }
 
 int operationSign() {
+	// Undefined expression
 	if (!(eq("*") || eq("-") || eq("+") || eq("DIV")))
-		// Undefined expression
-		error("Undefined expression");
+		return 0;
+
+	return 1;
 }
 
 //	Unallowed only assign operands of different types
