@@ -9,6 +9,7 @@ char *typeStack[STACK_SIZE];
 int typeStackPointer = 0;
 
 function functions[MAX_AMOUNT_OF_FUNCTIONS];
+int amountOfFunctions = 0;
 
 extern getBackPosition;
 extern FILE *input;
@@ -19,8 +20,6 @@ int syntax_manager() {
 		return NOT_FOUND;
 
 	prog();
-
-	prVar();
 }
 
 int prVar() {
@@ -44,22 +43,23 @@ int prog() {
 		// VAR is missed
 		error("VAR is missed");
 
+	// Declarations of functions
 	getLex();
 	if (eq("FUNCTION")) {
-		// == here ==
 		functionList();
 	}
 	
-	getLex();
-	if (eq("BEGIN")) {
-		stmtList();
-	}else {
-		error("BEGIN or function declaration is expected");
-	}
+	// Main function
+	//getLex();
+	//if (eq("BEGIN")) {
+	//	stmtList();
+	//}else {
+	//	error("BEGIN or function declaration is expected");
+	//}
 
-	if (!eq("END."))
-		// END is missed
-		error("END is missed");
+	//if (!eq("END."))
+	//	// END is missed
+	//	error("END is missed");
 }
 
 int name() {
@@ -107,28 +107,36 @@ int dec() {
 	}
 }
 
-// Give to all variables within the stack the type
+// Give to all variables within the stack a type
 int defineType() {
+	function *temp;
+	int index;
 	while (decStackPointer != 0) {
 		// Pop out of stack
 		int numberInTable = ipop();
 		// Multiple declaration
-		if (isDeclared(numberInTable))
+		if (isDeclared(index = map(numberInTable)))
 			error("Multiple declaration");
 		// Declaration
-		TID.table_r[numberInTable].isDeclared = 1;
-		strcpy(TID.table_r[numberInTable].type, find());
+		temp = &functions[amountOfFunctions];
+ 		temp->varDeclarations[index].isDeclared = 1;
+		strcpy(temp->varDeclarations[index].type, find());
+		temp->sizeRec++;
 	}
 }
 
-// Parse string of variable
+// Parse string of variables
 int idList() {
+	function *temp;
 	decStackPointer = 0;
 	while (1) {
 		getLex();
 		if (isId()) {
 			// Push into stack
 			ipush(cur_lex.numberInTable);
+			// Add variables to given function
+			temp = &functions[amountOfFunctions];
+			temp->variables[temp->sizeVar++] = find();
 			getLex();
 			if (!eq(",")) {
 				// Parsing is probably done
@@ -174,7 +182,7 @@ int stmt() {
 		// assign
 		assign();
 	}else if (eq("FUNCTION")) {
-		functionList();
+		// Function call
 	}else {
 		// Undefined statement 
 		error("Undefined statement");
@@ -183,9 +191,10 @@ int stmt() {
 }
 
 int assign() {
+	function *temp = &functions[amountOfFunctions];
 	typeStackPointer = 0;
-	tpush(TID.table_r[cur_lex.numberInTable].type);
-	if (!isDeclared(cur_lex.numberInTable))
+	tpush(temp->varDeclarations[map(cur_lex.numberInTable)].type);
+	if (!isDeclared(map(cur_lex.numberInTable)))
 		// Undeclared variable
 		error("Undeclared variable");
 
@@ -205,16 +214,19 @@ int expression() {
 	char *type;
 	int bracketCount = 0;
 	int isSignNow = 0;
+	function *temp;
 
 	while (1) {
 		getLex();
 
  		if (isId() && !isSignNow) {
-			if (!isDeclared(cur_lex.numberInTable))
+			if (!isDeclared(map(cur_lex.numberInTable)))
 				// Undeclared variable
 				error("Undeclared variable");
 
-			type = TID.table_r[cur_lex.numberInTable].type;
+			
+			temp = &functions[amountOfFunctions];
+			type = temp->varDeclarations[map(cur_lex.numberInTable)].type;
 			tpush(type);
 			isSignNow = 1;
 		}else if (isNum() && !isSignNow) {
@@ -290,10 +302,23 @@ void checkOp() {
 
 // return 1, if declared
 int isDeclared(int i) {
-	return TID.table_r[i].isDeclared == 1 ? 1 : 0;
+	if (i == NOT_FOUND) return 0;
+	function *temp = &functions[amountOfFunctions];
+	return temp->varDeclarations[i].isDeclared == 1 ? 1 : 0;
+}
+
+int map(int numberInTable) {
+	function *func = &functions[amountOfFunctions];
+	for (int i = 0; i < func->sizeVar; i++) {
+		if (!strcmp(func->variables[i], TID.table + numberInTable * TID.word_size))
+			return i;
+	}
+
+	return NOT_FOUND;
 }
 
 int read() {
+	function *temp = &functions[amountOfFunctions];
 	int numberInTable;
 	getLex();
 	if (eq("(")) {
@@ -301,7 +326,7 @@ int read() {
 		// Checks whether variables are declared
 		while (decStackPointer != 0) {
 			numberInTable = ipop();
-			if (TID.table_r[numberInTable].isDeclared != 1)
+			if (temp->varDeclarations[map(numberInTable)].isDeclared != 1)
 				// Undeclared variable
 				error("Undeclared variable");
 		}
@@ -317,6 +342,7 @@ int read() {
 }
 
 int write() {
+	function *temp = &functions[amountOfFunctions];
 	int numberInTable;
 	getLex();
 	if (eq("(")) {
@@ -324,7 +350,7 @@ int write() {
 		// Checks whether variables are declared
 		while (decStackPointer != 0) {
 			numberInTable = ipop();
-			if (TID.table_r[numberInTable].isDeclared != 1)
+			if (temp->varDeclarations[map(numberInTable)].isDeclared != 1)
 				// Undeclared variable
 				error("Undeclared variable");
 		}
@@ -391,8 +417,12 @@ int functionList() {
 }
 
 int func() {
+	amountOfFunctions++;
 	// Function name
 	name();
+
+	// Add name
+	strcpy(functions[amountOfFunctions].name, TID.table + cur_lex.numberInTable * TID.word_size);
 
 	getLex();
 	if (!eq("("))
