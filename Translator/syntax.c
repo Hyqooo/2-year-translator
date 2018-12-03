@@ -178,11 +178,12 @@ int stmt() {
 	}else if (eq("FOR")) {
 		for_loop();
 	}else if (isId()) {
-		// assign
-		assign();
-	}else if (eq("FUNCTION")) {
-		// Function call
-
+		// Is it function call?
+		if(findFunction())
+			func_call();
+		else
+			// assign
+			assign();
 	}else {
 		// Undefined statement 
 		error("Undefined statement");
@@ -383,6 +384,64 @@ int for_loop() {
 		error("Missed DO");
 
 	body();
+}
+
+int func_call() {
+	int functionNo = NOT_FOUND, numberInTable, mapping, varCount = 0;
+	// Find function by the name
+	for (int i = 0; i < amountOfFunctions + 1; i++) {
+		if (!strcmp(functions[i].name, find())) {
+			functionNo = i;
+		}
+	}
+
+	if (functionNo == NOT_FOUND)
+		error("Unknown name of the function");
+
+	getLex();
+	if (!eq("("))
+		error("Missed '('");
+
+	// Parameters
+	while (1) {
+		getLex();
+		if (isId()) {
+			mapping = map(cur_lex.numberInTable);
+			if (!isDeclared(mapping)) {
+				error("Undeclared variable");
+			}
+			if (strcmp(functions[functionNo].varDeclarations[varCount].type, functions[currentFunction].varDeclarations[mapping].type))
+				error("Different types of formal and actual parameter");
+			varCount++;
+		}else if (isNum()) {
+			char *type = typeOfConstant();
+			if (strcmp(type, functions[functionNo].varDeclarations[varCount].type))
+				error("Different types of formal and actual parameter");
+			varCount++;
+		}else if (!eq(",")){
+			getBack();
+			break;
+		}
+	}
+
+	if (functions[functionNo].sizeVar != varCount)
+		error("Amount of formal parameters differs from actual parameters");
+
+	getLex();
+	if (!eq(")"))
+		error("Missed ')'");
+}
+
+int findFunction() {
+	lex prevLex = cur_lex;
+	int isFuncCall = 1;
+
+	getLex();
+	if (!eq("("))
+		isFuncCall = 0;
+	getBack();
+	cur_lex = prevLex;
+	return isFuncCall;
 }
 
 int body() {
