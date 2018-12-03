@@ -8,7 +8,10 @@
 typedef struct function {
 	char name[MAX_ID_SIZE];
 	char *variables[SIZE_OF_TID_TABLE];
-	record varDeclarations;
+	int sizeVar;
+	int sizeRec;
+	record varDeclarations[SIZE_OF_TID_TABLE];
+	char type[MAX_ID_SIZE];
 }function;
 
 int syntax_manager();
