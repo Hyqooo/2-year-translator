@@ -10,6 +10,7 @@ int typeStackPointer = 0;
 
 function functions[MAX_AMOUNT_OF_FUNCTIONS];
 int amountOfFunctions = 0;
+int currentFunction = 0;
 
 extern getBackPosition;
 extern FILE *input;
@@ -20,12 +21,6 @@ int syntax_manager() {
 		return NOT_FOUND;
 
 	prog();
-}
-
-int prVar() {
-	for (int i = 0; i < TID.size; i++) {
-		printf("%d-%s\n", TID.table_r[i].isDeclared, TID.table_r[i].type);
-	}
 }
 
 int prog() {
@@ -49,25 +44,27 @@ int prog() {
 		functionList();
 	}
 	
-	// Main function
-	//getLex();
-	//if (eq("BEGIN")) {
-	//	stmtList();
-	//}else {
-	//	error("BEGIN or function declaration is expected");
-	//}
+	currentFunction = 0;
 
-	//if (!eq("END."))
-	//	// END is missed
-	//	error("END is missed");
+	// Main function
+	getLex();
+	if (eq("BEGIN")) {
+		stmtList();
+	}else {
+		error("BEGIN or function declaration is expected");
+	}
+
+	if (!eq("END."))
+		// END is missed
+		error("END is missed");
 }
 
 int name() {
 	getLex();
 	if (!isId())
 		error("Prohibited name");
-	TID.table_r[cur_lex.numberInTable].isDeclared = 1;
-	strcpy(TID.table_r[cur_lex.numberInTable].type, "name");
+	function *temp = &functions[currentFunction];
+	strcpy(temp->name, TID.table + cur_lex.numberInTable * TID.word_size);
 }
 
 int decList() {
@@ -118,7 +115,7 @@ int defineType() {
 		if (isDeclared(index = map(numberInTable)))
 			error("Multiple declaration");
 		// Declaration
-		temp = &functions[amountOfFunctions];
+		temp = &functions[currentFunction];
  		temp->varDeclarations[index].isDeclared = 1;
 		strcpy(temp->varDeclarations[index].type, find());
 		temp->sizeRec++;
@@ -135,8 +132,10 @@ int idList() {
 			// Push into stack
 			ipush(cur_lex.numberInTable);
 			// Add variables to given function
-			temp = &functions[amountOfFunctions];
-			temp->variables[temp->sizeVar++] = find();
+			if (!isDeclared(map(cur_lex.numberInTable))) {
+				temp = &functions[currentFunction];
+				temp->variables[temp->sizeVar++] = find();
+			}
 			getLex();
 			if (!eq(",")) {
 				// Parsing is probably done
@@ -183,6 +182,7 @@ int stmt() {
 		assign();
 	}else if (eq("FUNCTION")) {
 		// Function call
+
 	}else {
 		// Undefined statement 
 		error("Undefined statement");
@@ -191,7 +191,7 @@ int stmt() {
 }
 
 int assign() {
-	function *temp = &functions[amountOfFunctions];
+	function *temp = &functions[currentFunction];
 	typeStackPointer = 0;
 	tpush(temp->varDeclarations[map(cur_lex.numberInTable)].type);
 	if (!isDeclared(map(cur_lex.numberInTable)))
@@ -224,8 +224,7 @@ int expression() {
 				// Undeclared variable
 				error("Undeclared variable");
 
-			
-			temp = &functions[amountOfFunctions];
+			temp = &functions[currentFunction];
 			type = temp->varDeclarations[map(cur_lex.numberInTable)].type;
 			tpush(type);
 			isSignNow = 1;
@@ -303,12 +302,12 @@ void checkOp() {
 // return 1, if declared
 int isDeclared(int i) {
 	if (i == NOT_FOUND) return 0;
-	function *temp = &functions[amountOfFunctions];
+	function *temp = &functions[currentFunction];
 	return temp->varDeclarations[i].isDeclared == 1 ? 1 : 0;
 }
 
 int map(int numberInTable) {
-	function *func = &functions[amountOfFunctions];
+	function *func = &functions[currentFunction];
 	for (int i = 0; i < func->sizeVar; i++) {
 		if (!strcmp(func->variables[i], TID.table + numberInTable * TID.word_size))
 			return i;
@@ -318,7 +317,7 @@ int map(int numberInTable) {
 }
 
 int read() {
-	function *temp = &functions[amountOfFunctions];
+	function *temp = &functions[currentFunction];
 	int numberInTable;
 	getLex();
 	if (eq("(")) {
@@ -342,7 +341,7 @@ int read() {
 }
 
 int write() {
-	function *temp = &functions[amountOfFunctions];
+	function *temp = &functions[currentFunction];
 	int numberInTable;
 	getLex();
 	if (eq("(")) {
@@ -417,12 +416,9 @@ int functionList() {
 }
 
 int func() {
-	amountOfFunctions++;
+	currentFunction = ++amountOfFunctions;
 	// Function name
 	name();
-
-	// Add name
-	strcpy(functions[amountOfFunctions].name, TID.table + cur_lex.numberInTable * TID.word_size);
 
 	getLex();
 	if (!eq("("))
@@ -453,6 +449,8 @@ int func() {
 	if (!eq("RETURN"))
 		error("function must return the value");
 
+	// Return expression
+//	tpush(functions[currentFunction]);
 	expression();
 
 	getLex();
