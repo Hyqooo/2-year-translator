@@ -416,6 +416,7 @@ int functionList() {
 }
 
 int func() {
+	typeStackPointer = 0;
 	currentFunction = ++amountOfFunctions;
 	// Function name
 	name();
@@ -435,23 +436,29 @@ int func() {
 	if (!eq(":"))
 		error("Missed ':' in function type");
 
+	// Type of function's returning value
 	getLex();
 	if (!eq("REAL") && !eq("INTEGER"))
 		error("Function type is undefined");
+	strcpy(functions[currentFunction].type, find());
 	
 	getLex();
 	if (!eq("BEGIN"))
 		error("BEGIN is expected");
 
+	// Body
 	stmtList();
 
 	getLex();
 	if (!eq("RETURN"))
 		error("function must return the value");
 
-	// Return expression
-//	tpush(functions[currentFunction]);
+	// Returning expression
+	typeStackPointer = 0;
+	tpush(functions[currentFunction].type);
+	tpush(":=");
 	expression();
+	checkOp();
 
 	getLex();
 	if (!eq(";"))
