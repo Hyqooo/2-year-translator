@@ -1,6 +1,7 @@
 #include "translator.h"
 #include "lexical.h"
 #include "syntax.h"
+#include "RPN.h"
 
 int decStack[STACK_SIZE];
 int decStackPointer = 0;
@@ -12,9 +13,14 @@ function functions[MAX_AMOUNT_OF_FUNCTIONS];
 int amountOfFunctions = 0;
 int currentFunction = 0;
 
+// Lexical
 extern getBackPosition;
 extern FILE *input;
 extern lex cur_lex;
+
+// RPN
+extern buffer[SIZE_OF_SINGLE_OP];
+extern internalRepresentation[NUMBER_OF_OP][SIZE_OF_SINGLE_OP];
 
 void syntax_manager() {
 	if ((input = fopen("D:\\lex_analysis.txt", "r")) == NULL)
@@ -217,6 +223,9 @@ void expression() {
 	int bracketCount = 0;
 	int isSignNow = 0;
 	function *temp;
+	
+	// Restore buffer from RPN to original state
+	restoreBuffer();
 
 	while (1) {
 		getLex();
@@ -254,6 +263,9 @@ void expression() {
 			// Operand is missed
 			error("Operand is missed");
 		}
+
+		// Add lexeme to buffer for further parsing
+		addLexToBuffer(find());
 	}
 }
 
