@@ -4,10 +4,21 @@
 
 #define SIZE_OF_SINGLE_OP 128
 #define NUMBER_OF_OP 124
+#define SIZE_OF_OP_STACK 20
 
-void parserArithmExp();
+void arithmeticParser();
 void addLexToBuffer(char *);
-void restoreBuffer();
+void restore();
+void addLexToBuffer(char *);
+char *getNextEl();
+void addToFinalRep(char *);
+void restoreElement();
+void pushToOpStack(char *);
+char *popOutOpStack();
+char *lookTopOfStack();
+int isGrtrOrEqPrecedence(char *, char *);
+int isSignOfOp(char *);
+int isNumOrId(char *);
 
 
 #endif // !RPN_H

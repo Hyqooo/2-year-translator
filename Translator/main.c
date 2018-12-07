@@ -14,6 +14,7 @@ FILE *input = NULL;
 FILE *output = NULL;
 
 extern char buffer[SIZE_OF_SINGLE_OP];
+extern char internalRepresentation[NUMBER_OF_OP][SIZE_OF_SINGLE_OP];
 
 void main(int argc, char *argv[]) {
 	// Lexical analysis
@@ -21,7 +22,10 @@ void main(int argc, char *argv[]) {
 	// Syntax + semantic analysis
 	syntax_manager();
 
-	printf("%s", buffer);
+	expression();
+	arithmeticParser();
+
+	printf("%s", internalRepresentation[0]);
 
 	printf("\n");
 	system("PAUSE");

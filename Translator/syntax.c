@@ -26,7 +26,7 @@ void syntax_manager() {
 	if ((input = fopen("D:\\lex_analysis.txt", "r")) == NULL)
 		return;
 
-	prog();
+//	prog();
 }
 
 int prog() {
@@ -224,8 +224,8 @@ void expression() {
 	int isSignNow = 0;
 	function *temp;
 	
-	// Restore buffer from RPN to original state
-	restoreBuffer();
+	// Restore arithmetic parser to original state
+	restore();
 
 	while (1) {
 		getLex();
