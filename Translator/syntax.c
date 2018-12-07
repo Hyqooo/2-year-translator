@@ -16,9 +16,9 @@ extern getBackPosition;
 extern FILE *input;
 extern lex cur_lex;
 
-int syntax_manager() {
+void syntax_manager() {
 	if ((input = fopen("D:\\lex_analysis.txt", "r")) == NULL)
-		return NOT_FOUND;
+		return;
 
 	prog();
 }
@@ -54,12 +54,13 @@ int prog() {
 		error("BEGIN or function declaration is expected");
 	}
 
+	getLex();
 	if (!eq("END."))
 		// END is missed
 		error("END is missed");
 }
 
-int name() {
+void name() {
 	getLex();
 	if (!isId())
 		error("Prohibited name");
@@ -87,7 +88,7 @@ int decList() {
 	}
 }
 
-int dec() {
+void dec() {
 	idList();
 	getLex();
 	if (eq(":")) {
@@ -123,7 +124,7 @@ int defineType() {
 }
 
 // Parse string of variables
-int idList() {
+void idList() {
 	function *temp;
 	decStackPointer = 0;
 	while (1) {
@@ -150,7 +151,7 @@ int idList() {
 }
 
 // Stmt control ';'
-int stmtList() {
+void stmtList() {
 	while (1) {
 		stmt();
 		 
@@ -168,7 +169,7 @@ int stmtList() {
 	}
 }
 
-int stmt() {
+void stmt() {
 	getLex();
 
 	if (eq("READ")) {
@@ -211,7 +212,7 @@ int assign() {
 	checkOp();
 }
 
-int expression() {
+void expression() {
 	char *type;
 	int bracketCount = 0;
 	int isSignNow = 0;
@@ -246,7 +247,7 @@ int expression() {
 					error("Expected '('");
 
 				getBack();
-				return 1;
+				return;
 			}
 			isSignNow = 0;
 		}else {
@@ -279,7 +280,7 @@ char* isCompatible(char *op, char *type_1, char *type_2) {
 	else
 		return "INTEGER";
 	
-	return 1;
+	return "";
 }
 
 void checkOp() {
@@ -366,7 +367,7 @@ int write() {
 	}
 }
 
-int for_loop() {
+void for_loop() {
 	getLex();
 	assign();
 
@@ -378,7 +379,6 @@ int for_loop() {
 	expression();
 
 	getLex();
-
 	if (!eq("DO"))
 		// Missed DO
 		error("Missed DO");
@@ -386,8 +386,8 @@ int for_loop() {
 	body();
 }
 
-int func_call() {
-	int functionNo = NOT_FOUND, numberInTable, mapping, varCount = 0;
+void func_call() {
+	int functionNo = NOT_FOUND, mapping, varCount = 0;
 	// Find function by the name
 	for (int i = 0; i < amountOfFunctions + 1; i++) {
 		if (!strcmp(functions[i].name, find())) {
@@ -444,7 +444,7 @@ int findFunction() {
 	return isFuncCall;
 }
 
-int body() {
+void body() {
 	getLex();
 
 	if (eq("BEGIN")) {
@@ -460,7 +460,7 @@ int body() {
 
 }
 
-int functionList() {
+void functionList() {
 	while (1) {
 		func();
 
@@ -469,12 +469,12 @@ int functionList() {
 			error("BEGIN or function declaration is expected");
 		}else if (eq("BEGIN")) {
 			getBack();
-			return 1;
+			return;
 		}
 	}
 }
 
-int func() {
+void func() {
 	typeStackPointer = 0;
 	currentFunction = ++amountOfFunctions;
 	// Function name
@@ -528,7 +528,7 @@ int func() {
 		error("END is missed");
 }
 
-int argList() {
+void argList() {
 	while (1) {
 		dec();
 
@@ -583,6 +583,8 @@ char* find() {
 		return TID.table + cur_lex.numberInTable * TID.word_size;
 		break;
 	}
+
+	return " ";
 }
 
 void ipush(int i) {
@@ -607,6 +609,6 @@ char* tpop() {
 	return type;
 }
 
-int getBack() {
+void getBack() {
 	fseek(input, getBackPosition, SEEK_SET);
 }
