@@ -24,6 +24,8 @@ int stateStackPointer = 0;
 char variableForLoopStack[MAX_ID_SIZE][SIZE_OF_OP_STACK];
 int varForLoopPointer = 0;
 
+int functionPos[20];
+
 // Operands and operators separated by space
 void arithmeticParser() {
 	char *toRep;
@@ -258,7 +260,7 @@ char *parseIntToString(int number) {
 	for (int i = 0; i < 10; i++)
 		stringNum[i] = '\0';
 
-	int nDigits = floor(log10(abs(number))) + 1;
+	int nDigits = (int)floor(log10(abs(number))) + 1;
 
 	for (int i = nDigits - 1; i > -1; i--, number /= 10) {
 		int t = number % 10;
@@ -266,6 +268,10 @@ char *parseIntToString(int number) {
 	}
 
 	return stringNum;
+}
+
+void addFunctionPos(int noFunction) {
+	functionPos[noFunction] = countOperators + 1;
 }
 
 void pushVarForStack(char *var) {
@@ -276,4 +282,9 @@ void pushVarForStack(char *var) {
 char *popVarForStack() {
 	varForLoopPointer--;
 	return variableForLoopStack[varForLoopPointer];
+}
+
+void printInternalRep() {
+	for (int i = 0; strlen(internalRepresentation[i]) != 0; i++)
+		printf("%2d. %s\n", i + 1, internalRepresentation[i]);
 }

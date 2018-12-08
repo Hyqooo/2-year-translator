@@ -1,7 +1,6 @@
 #include "lexical.h"
 #include "translator.h"
 #include "syntax.h"
-#include "RPN.h"
 
 char buf[BUFFER_SIZE];
 char ch;
@@ -13,17 +12,11 @@ extern lex cur_lex;
 FILE *input = NULL;
 FILE *output = NULL;
 
-extern char buffer[SIZE_OF_SINGLE_OP];
-extern char internalRepresentation[NUMBER_OF_OP][SIZE_OF_SINGLE_OP];
-
 void main(int argc, char *argv[]) {
 	// Lexical analysis
 	lexManager();
 	// Syntax + semantic analysis
 	syntax_manager();
-
-	for (int i = 0; strlen(internalRepresentation[i]) != 0; i++)
-		printf("%2d. %s\n", i + 1, internalRepresentation[i]);
 
 	printf("\n");
 	system("PAUSE");

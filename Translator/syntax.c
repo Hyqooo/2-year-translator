@@ -21,6 +21,7 @@ extern lex cur_lex;
 // RPN
 extern buffer[SIZE_OF_SINGLE_OP];
 extern internalRepresentation[NUMBER_OF_OP][SIZE_OF_SINGLE_OP];
+extern int functionPos[MAX_AMOUNT_OF_FUNCTIONS];
 extern countOperators;
 
 void syntax_manager() {
@@ -28,6 +29,7 @@ void syntax_manager() {
 		return;
 
 	prog();
+	printInternalRep();
 }
 
 int prog() {
@@ -56,6 +58,9 @@ int prog() {
 	currentFunction = 0;
 
 	// Main function
+	restore();
+	addToFinalRep("main ->");
+	countOperators++;
 	getLex();
 	if (eq("BEGIN")) {
 		stmtList();
@@ -471,6 +476,13 @@ void func_call() {
 	getLex();
 	if (!eq(")"))
 		error("Missed ')'");
+
+	// Function call in representation
+	restore();
+	addToFinalRep("call");
+	addToFinalRep(parseIntToString(functionPos[functionNo]));
+	addToFinalRep("!");
+	countOperators++;
 }
 
 int findFunction() {
@@ -536,6 +548,15 @@ void func() {
 	// Function name
 	name();
 
+	restore();
+	addToFinalRep(find());
+	addToFinalRep("->");
+	countOperators++;
+
+
+	// Add function position
+	addFunctionPos(currentFunction);
+
 	getLex();
 	if (!eq("("))
 		error("Missed '('");
@@ -569,6 +590,7 @@ void func() {
 		error("function must return the value");
 
 	// Returning expression
+	restore();
 	typeStackPointer = 0;
 	tpush(functions[currentFunction].type);
 	tpush(":=");
@@ -578,6 +600,10 @@ void func() {
 	getLex();
 	if (!eq(";"))
 		error("Missed ';'");
+
+	addToFinalRep("return");
+	arithmeticParser();
+	countOperators++;
 
 	getLex();
 	if (!eq("END"))

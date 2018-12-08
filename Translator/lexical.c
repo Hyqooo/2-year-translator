@@ -67,11 +67,6 @@ int lexManager() {
 
 	lex_analyzer();
 
-	printf("\nIdentifiers:\n");
-	printTable(TID);
-	printf("Constants:\n");
-	printTable(TNUM);
-
 	fclose(input);
 	fclose(output);
 	input = NULL;
