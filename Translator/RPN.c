@@ -1,7 +1,6 @@
 #include "RPN.h"
 #include "translator.h"
 
-
 char operatorStack[SIZE_OF_OP_STACK][4];
 int opStackPointer = 0;
 
@@ -13,7 +12,7 @@ char element[MAX_ID_SIZE];
 
 char internalRepresentation[NUMBER_OF_OP][SIZE_OF_SINGLE_OP];
 int countOperators = 0;
-int pointToWriteRep = 0;
+static int pointToWriteRep = 0;
 
 // Operands and operators separated by space
 void arithmeticParser() {
@@ -31,7 +30,7 @@ void arithmeticParser() {
 		if (isSignOfOp(element)) {
 			// Element at the top of the stack has greater or equal precedence and element not equal '('
 			while (strcmp(lookTopOfStack(), "(") && isGrtrOrEqPrecedence(element, lookTopOfStack())) {
-				// Pop elements from stack to final representation
+				// Pop elements from stack to final representation until it '('
 				toRep = popOutOpStack();
 				if (!toRep) break;
 				if (strcmp(toRep, "("))
@@ -149,4 +148,47 @@ int isGrtrOrEqPrecedence(char *el, char *tOfStack) {
 			return 1;
 	}
 
+}
+
+void assignRPN() {
+	// Adds left-side variable to representation
+	addToFinalRep(getNextEl());
+
+	// Arithmetic expression analysis
+	arithmeticParser();
+
+	// Adds ':=' to the end
+	addToFinalRep(":=");
+
+	countOperators++;
+}
+
+void readParser() {
+	while (1) {
+		// Get element
+		restoreElement();
+		strcpy(element, getNextEl());
+		if (strlen(element) == 0)
+			break;
+
+		addToFinalRep(element);
+		addToFinalRep("READ");
+		countOperators++;
+		pointToWriteRep = 0;
+	}
+}
+
+void writeParser() {
+	while (1) {
+		// Get element
+		restoreElement();
+		strcpy(element, getNextEl());
+		if (strlen(element) == 0)
+			break;
+
+		addToFinalRep(element);
+		addToFinalRep("WRITE");
+		countOperators++;
+		pointToWriteRep = 0;
+	}
 }

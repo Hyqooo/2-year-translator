@@ -26,7 +26,7 @@ void syntax_manager() {
 	if ((input = fopen("D:\\lex_analysis.txt", "r")) == NULL)
 		return;
 
-//	prog();
+	prog();
 }
 
 int prog() {
@@ -48,6 +48,8 @@ int prog() {
 	getLex();
 	if (eq("FUNCTION")) {
 		functionList();
+	}else {
+		getBack();
 	}
 	
 	currentFunction = 0;
@@ -143,6 +145,7 @@ void idList() {
 				temp = &functions[currentFunction];
 				temp->variables[temp->sizeVar++] = find();
 			}
+			addLexToBuffer(find());
 			getLex();
 			if (!eq(",")) {
 				// Parsing is probably done
@@ -172,6 +175,7 @@ void stmtList() {
 		}else {
 			getBack();
 		}
+		
 	}
 }
 
@@ -206,6 +210,11 @@ int assign() {
 		// Undeclared variable
 		error("Undeclared variable");
 
+	restore();
+
+	// Adds left-side variable and assign operator to buffer
+	addLexToBuffer(find());
+
 	getLex();
 	if (!eq(":="))
 		// Missed ':='
@@ -216,6 +225,9 @@ int assign() {
 
 	// Checks compatible of operands
 	checkOp();
+
+	// Assign parser
+	assignRPN();
 }
 
 void expression() {
@@ -223,9 +235,6 @@ void expression() {
 	int bracketCount = 0;
 	int isSignNow = 0;
 	function *temp;
-	
-	// Restore arithmetic parser to original state
-	restore();
 
 	while (1) {
 		getLex();
@@ -334,6 +343,8 @@ int read() {
 	function *temp = &functions[currentFunction];
 	int numberInTable;
 	getLex();
+	// Restore
+	restore();
 	if (eq("(")) {
 		idList();
 		// Checks whether variables are declared
@@ -352,12 +363,16 @@ int read() {
 		// Missed '('
 		error("Missed '('");
 	}
+
+	readParser();
 }
 
 int write() {
 	function *temp = &functions[currentFunction];
 	int numberInTable;
 	getLex();
+	// Restore
+	restore();
 	if (eq("(")) {
 		idList();
 		// Checks whether variables are declared
@@ -377,6 +392,8 @@ int write() {
 		// Missed '('
 		error("Missed '('");
 	}
+
+	writeParser();
 }
 
 void for_loop() {

@@ -22,10 +22,8 @@ void main(int argc, char *argv[]) {
 	// Syntax + semantic analysis
 	syntax_manager();
 
-	expression();
-	arithmeticParser();
-
-	printf("%s", internalRepresentation[0]);
+	for (int i = 0; strlen(internalRepresentation[i]) != 0; i++)
+		printf("%s\n", internalRepresentation[i]);
 
 	printf("\n");
 	system("PAUSE");
