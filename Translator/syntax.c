@@ -1,6 +1,7 @@
 #include "translator.h"
 #include "lexical.h"
 #include "syntax.h"
+#include "RPN.h"
 
 int decStack[STACK_SIZE];
 int decStackPointer = 0;
@@ -12,15 +13,23 @@ function functions[MAX_AMOUNT_OF_FUNCTIONS];
 int amountOfFunctions = 0;
 int currentFunction = 0;
 
+// Lexical
 extern getBackPosition;
 extern FILE *input;
 extern lex cur_lex;
+
+// RPN
+extern buffer[SIZE_OF_SINGLE_OP];
+extern internalRepresentation[NUMBER_OF_OP][SIZE_OF_SINGLE_OP];
+extern int functionPos[MAX_AMOUNT_OF_FUNCTIONS];
+extern countOperators;
 
 void syntax_manager() {
 	if ((input = fopen("D:\\lex_analysis.txt", "r")) == NULL)
 		return;
 
 	prog();
+	printInternalRep();
 }
 
 int prog() {
@@ -42,11 +51,16 @@ int prog() {
 	getLex();
 	if (eq("FUNCTION")) {
 		functionList();
+	}else {
+		getBack();
 	}
 	
 	currentFunction = 0;
 
 	// Main function
+	restore();
+	addToFinalRep("main ->");
+	countOperators++;
 	getLex();
 	if (eq("BEGIN")) {
 		stmtList();
@@ -58,6 +72,10 @@ int prog() {
 	if (!eq("END."))
 		// END is missed
 		error("END is missed");
+
+	restore();
+	addToFinalRep("end.");
+	countOperators++;
 }
 
 void name() {
@@ -137,6 +155,7 @@ void idList() {
 				temp = &functions[currentFunction];
 				temp->variables[temp->sizeVar++] = find();
 			}
+			addLexToBuffer(find());
 			getLex();
 			if (!eq(",")) {
 				// Parsing is probably done
@@ -166,6 +185,7 @@ void stmtList() {
 		}else {
 			getBack();
 		}
+		
 	}
 }
 
@@ -200,6 +220,11 @@ int assign() {
 		// Undeclared variable
 		error("Undeclared variable");
 
+	restore();
+
+	// Adds left-side variable and assign operator to buffer
+	addLexToBuffer(find());
+
 	getLex();
 	if (!eq(":="))
 		// Missed ':='
@@ -210,6 +235,9 @@ int assign() {
 
 	// Checks compatible of operands
 	checkOp();
+
+	// Assign parser
+	assignRPN();
 }
 
 void expression() {
@@ -254,6 +282,9 @@ void expression() {
 			// Operand is missed
 			error("Operand is missed");
 		}
+
+		// Add lexeme to buffer for further parsing
+		addLexToBuffer(find());
 	}
 }
 
@@ -322,6 +353,8 @@ int read() {
 	function *temp = &functions[currentFunction];
 	int numberInTable;
 	getLex();
+	// Restore
+	restore();
 	if (eq("(")) {
 		idList();
 		// Checks whether variables are declared
@@ -340,12 +373,16 @@ int read() {
 		// Missed '('
 		error("Missed '('");
 	}
+
+	readParser();
 }
 
 int write() {
 	function *temp = &functions[currentFunction];
 	int numberInTable;
 	getLex();
+	// Restore
+	restore();
 	if (eq("(")) {
 		idList();
 		// Checks whether variables are declared
@@ -365,11 +402,18 @@ int write() {
 		// Missed '('
 		error("Missed '('");
 	}
+
+	writeParser();
 }
 
 void for_loop() {
 	getLex();
+	char *var = find();
 	assign();
+	// Restore
+	restore();
+	// Adds left-side variable to buffer for comparison
+	addLexToBuffer(var);
 
 	getLex();
 	if (!eq("TO"))
@@ -377,6 +421,8 @@ void for_loop() {
 		error("Missed TO");
 
 	expression();
+
+	forParser();
 
 	getLex();
 	if (!eq("DO"))
@@ -430,6 +476,13 @@ void func_call() {
 	getLex();
 	if (!eq(")"))
 		error("Missed ')'");
+
+	// Function call in representation
+	restore();
+	addToFinalRep("call");
+	addToFinalRep(parseIntToString(functionPos[functionNo]));
+	addToFinalRep("!");
+	countOperators++;
 }
 
 int findFunction() {
@@ -445,6 +498,7 @@ int findFunction() {
 }
 
 void body() {
+	state_t state;
 	getLex();
 
 	if (eq("BEGIN")) {
@@ -458,6 +512,20 @@ void body() {
 		stmt();
 	}
 
+	// To begin of cycle
+	restore();
+	addToFinalRep(popVarForStack());
+	addToFinalRep("1 + :=");
+	restore();
+	countOperators++;
+	addToFinalRep(parseIntToString(popStateStack().line));
+	addToFinalRep("!");
+	countOperators++;
+
+	state.line = countOperators + 1;
+
+	// End of cycle
+	fillGaps(popStateStack(), state);
 }
 
 void functionList() {
@@ -479,6 +547,15 @@ void func() {
 	currentFunction = ++amountOfFunctions;
 	// Function name
 	name();
+
+	restore();
+	addToFinalRep(find());
+	addToFinalRep("->");
+	countOperators++;
+
+
+	// Add function position
+	addFunctionPos(currentFunction);
 
 	getLex();
 	if (!eq("("))
@@ -513,6 +590,7 @@ void func() {
 		error("function must return the value");
 
 	// Returning expression
+	restore();
 	typeStackPointer = 0;
 	tpush(functions[currentFunction].type);
 	tpush(":=");
@@ -522,6 +600,10 @@ void func() {
 	getLex();
 	if (!eq(";"))
 		error("Missed ';'");
+
+	addToFinalRep("return");
+	arithmeticParser();
+	countOperators++;
 
 	getLex();
 	if (!eq("END"))
