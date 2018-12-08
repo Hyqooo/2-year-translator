@@ -21,6 +21,7 @@ extern lex cur_lex;
 // RPN
 extern buffer[SIZE_OF_SINGLE_OP];
 extern internalRepresentation[NUMBER_OF_OP][SIZE_OF_SINGLE_OP];
+extern countOperators;
 
 void syntax_manager() {
 	if ((input = fopen("D:\\lex_analysis.txt", "r")) == NULL)
@@ -66,6 +67,10 @@ int prog() {
 	if (!eq("END."))
 		// END is missed
 		error("END is missed");
+
+	restore();
+	addToFinalRep("end.");
+	countOperators++;
 }
 
 void name() {
@@ -398,7 +403,12 @@ int write() {
 
 void for_loop() {
 	getLex();
+	char *var = find();
 	assign();
+	// Restore
+	restore();
+	// Adds left-side variable to buffer for comparison
+	addLexToBuffer(var);
 
 	getLex();
 	if (!eq("TO"))
@@ -406,6 +416,8 @@ void for_loop() {
 		error("Missed TO");
 
 	expression();
+
+	forParser();
 
 	getLex();
 	if (!eq("DO"))
@@ -474,6 +486,7 @@ int findFunction() {
 }
 
 void body() {
+	state_t state;
 	getLex();
 
 	if (eq("BEGIN")) {
@@ -487,6 +500,20 @@ void body() {
 		stmt();
 	}
 
+	// To begin of cycle
+	restore();
+	addToFinalRep(popVarForStack());
+	addToFinalRep("1 + :=");
+	restore();
+	countOperators++;
+	addToFinalRep(parseIntToString(popStateStack().line));
+	addToFinalRep("!");
+	countOperators++;
+
+	state.line = countOperators + 1;
+
+	// End of cycle
+	fillGaps(popStateStack(), state);
 }
 
 void functionList() {

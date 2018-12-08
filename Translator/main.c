@@ -23,7 +23,7 @@ void main(int argc, char *argv[]) {
 	syntax_manager();
 
 	for (int i = 0; strlen(internalRepresentation[i]) != 0; i++)
-		printf("%s\n", internalRepresentation[i]);
+		printf("%2d. %s\n", i + 1, internalRepresentation[i]);
 
 	printf("\n");
 	system("PAUSE");

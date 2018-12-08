@@ -1,6 +1,8 @@
 #include "RPN.h"
 #include "translator.h"
 
+char stringNum[10];
+
 char operatorStack[SIZE_OF_OP_STACK][4];
 int opStackPointer = 0;
 
@@ -13,6 +15,14 @@ char element[MAX_ID_SIZE];
 char internalRepresentation[NUMBER_OF_OP][SIZE_OF_SINGLE_OP];
 int countOperators = 0;
 static int pointToWriteRep = 0;
+
+state_t s;
+
+state_t stateStack[SIZE_OF_OP_STACK];
+int stateStackPointer = 0;
+
+char variableForLoopStack[MAX_ID_SIZE][SIZE_OF_OP_STACK];
+int varForLoopPointer = 0;
 
 // Operands and operators separated by space
 void arithmeticParser() {
@@ -191,4 +201,79 @@ void writeParser() {
 		countOperators++;
 		pointToWriteRep = 0;
 	}
+}
+
+/*
+		<point> !F - point to end of loop
+		! - point to condition
+*/
+void forParser() {
+	// Adds left-side variable
+	char *var = getNextEl();
+	addToFinalRep(var);
+	pushVarForStack(var);
+
+	// Arithmetic expression
+	arithmeticParser();
+
+	// Adds operation sign '<='
+	addToFinalRep("<=");
+	countOperators++;
+
+	// Jump out of cycle
+	s.line = countOperators - 1;
+	s.position = pointToWriteRep;
+	pushToStateStack(s);
+	
+	// Begin of condition
+	s.line = countOperators;
+	s.position = 0;
+	pushToStateStack(s);
+}
+
+void pushToStateStack(state_t state) {
+	stateStack[stateStackPointer++] = state;
+}
+
+state_t popStateStack() {
+	stateStackPointer--;
+	return stateStack[stateStackPointer];
+}
+
+void fillGaps(state_t gap, state_t fillWith) {
+	int prevCountOp = countOperators;
+	int prevPositionRep = pointToWriteRep;
+
+	countOperators = gap.line;
+	pointToWriteRep = gap.position;
+
+	addToFinalRep(parseIntToString(fillWith.line));
+	addToFinalRep("!F");
+
+	countOperators = prevCountOp;
+	pointToWriteRep = prevPositionRep;
+}
+
+char *parseIntToString(int number) {
+	for (int i = 0; i < 10; i++)
+		stringNum[i] = '\0';
+
+	int nDigits = floor(log10(abs(number))) + 1;
+
+	for (int i = nDigits - 1; i > -1; i--, number /= 10) {
+		int t = number % 10;
+		stringNum[i] = (char)(t + '0');
+	}
+
+	return stringNum;
+}
+
+void pushVarForStack(char *var) {
+	strcpy(variableForLoopStack[varForLoopPointer], var);
+	varForLoopPointer++;
+}
+
+char *popVarForStack() {
+	varForLoopPointer--;
+	return variableForLoopStack[varForLoopPointer];
 }
